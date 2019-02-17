@@ -1,0 +1,19 @@
+.gradle/
+.idea/
+.project
+.settings/org.eclipse.m2e.core.prefs
+bin/
+build/
+release.properties
+**/*.bak
+**/*.iml
+**/hs_err_pid*.log
+**/pom.xml.*
+target/
+collected-*/
+**/gen/**
+**/dist.tgz
+
+## Eclipse
+**/.classpath
+**/.settings
