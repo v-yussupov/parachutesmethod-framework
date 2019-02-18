@@ -22,7 +22,7 @@
 
     <servlet-mapping>
         <servlet-name>jersey</servlet-name>
-        <url-pattern>/api/*</url-pattern>
+        <url-pattern>/*</url-pattern>
     </servlet-mapping>
 
     <servlet>
@@ -36,7 +36,7 @@
 
     <servlet-mapping>
         <servlet-name>OpenApi</servlet-name>
-        <url-pattern>/openapi/*</url-pattern>
+        <url-pattern>/swagger/*</url-pattern>
     </servlet-mapping>
 
 </web-app>
