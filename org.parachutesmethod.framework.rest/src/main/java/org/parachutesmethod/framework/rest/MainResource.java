@@ -1,5 +1,7 @@
 package org.parachutesmethod.framework.rest;
 
+import java.io.IOException;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.parachutesmethod.framework.extraction.ParachuteExtractor;
@@ -26,9 +28,12 @@ public class MainResource {
     @Path("extract")
     @Produces(MediaType.TEXT_PLAIN)
     public Response extractRepository(String url) {
-        ParachuteExtractor p = new ParachuteExtractor();
-
-        p.downloadGitHubRepository(url);
+        try {
+            ParachuteExtractor p = new ParachuteExtractor();
+            p.downloadGitHubRepository(url);
+        } catch (IOException e) {
+            return Response.serverError().entity(e.getMessage()).build();
+        }
         return Response.ok().build();
     }
 
