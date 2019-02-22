@@ -2,6 +2,6 @@ package org.parachutesmethod.framework.extraction.filehandling;
 
 import java.nio.file.Path;
 
-public interface SourceCodeHandler {
+public interface SourceCodeProcessor {
     void handle(Path path);
 }

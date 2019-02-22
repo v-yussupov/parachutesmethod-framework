@@ -13,16 +13,11 @@
                 org.parachutesmethod.framework.rest
             </param-value>
         </init-param>
-        <init-param>
-            <param-name>jersey.config.server.wadl.disableWadl</param-name>
-            <param-value>true</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
     </servlet>
 
     <servlet-mapping>
         <servlet-name>jersey</servlet-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>/api/*</url-pattern>
     </servlet-mapping>
 
     <servlet>
@@ -36,7 +31,7 @@
 
     <servlet-mapping>
         <servlet-name>OpenApi</servlet-name>
-        <url-pattern>/swagger/*</url-pattern>
+        <url-pattern>/api/spec/*</url-pattern>
     </servlet-mapping>
 
 </web-app>

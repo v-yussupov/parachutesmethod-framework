@@ -3,9 +3,8 @@ package org.parachutesmethod.framework.extraction.analyzers.java;
 import java.io.IOException;
 import java.nio.file.Path;
 
-import org.parachutesmethod.framework.extraction.filehandling.SupportedLanguage;
-import org.parachutesmethod.framework.extraction.filehandling.SourceCodeHandler;
 import org.parachutesmethod.framework.extraction.filehandling.ProjectCodeExplorer;
+import org.parachutesmethod.framework.extraction.filehandling.SupportedLanguage;
 
 public class JavaParachuteProjectAnalyzer {
 
@@ -15,12 +14,10 @@ public class JavaParachuteProjectAnalyzer {
         this.projectPath = projectPath;
     }
 
-    public void traverseProject(SourceCodeHandler handler) throws IOException {
+    public void traverseProject() throws IOException {
 
         ProjectCodeExplorer explorer = new ProjectCodeExplorer(SupportedLanguage.JAVA);
-        explorer.collectProjectFiles(projectPath);
-
-        explorer.handleSourceFiles(handler);
+        explorer.traverseProjectFiles(projectPath, (p) -> System.out.println(p.toString()));
 
         //JavaParser.parsePackageDeclaration(null);
     }

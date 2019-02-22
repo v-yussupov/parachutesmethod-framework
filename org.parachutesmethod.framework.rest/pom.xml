@@ -128,8 +128,8 @@
                     <file>${project.build.directory}/swagger-ui/META-INF/resources/webjars/swagger-ui/${swagger-ui.version}/index.html</file>
                     <replacements>
                         <replacement>
-                            <token>http://petstore.swagger.io/v2/swagger.json</token>
-                            <value>/swagger/openapi.json</value>
+                            <token>https://petstore.swagger.io/v2/swagger.json</token>
+                            <value>/api/spec/openapi.json</value>
                         </replacement>
                     </replacements>
                 </configuration>

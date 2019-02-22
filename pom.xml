@@ -23,7 +23,7 @@
         <maven-war-plugin.version>3.2.2</maven-war-plugin.version>
         <replacer.version>1.5.3</replacer.version>
         <swagger.version>2.0.2</swagger.version>
-        <swagger-ui.version>3.17.0</swagger-ui.version>
+        <swagger-ui.version>3.20.8</swagger-ui.version>
     </properties>
 
     <modules>

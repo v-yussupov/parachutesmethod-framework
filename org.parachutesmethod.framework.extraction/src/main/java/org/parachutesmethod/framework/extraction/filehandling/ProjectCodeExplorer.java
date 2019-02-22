@@ -1,8 +1,6 @@
 package org.parachutesmethod.framework.extraction.filehandling;
 
 import java.io.IOException;
-import java.nio.file.DirectoryIteratorException;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -15,30 +13,25 @@ public class ProjectCodeExplorer {
 
     private static Logger LOGGER = LoggerFactory.getLogger(ProjectCodeExplorer.class);
 
-    private String glob;
-    private List<Path> sourceCodeFiles;
+    private String fileExtension;
+    private List<Path> projectFilePaths;
 
-    public ProjectCodeExplorer(SupportedLanguage lang) {
-        this.glob = lang.getGlobbingPattern();
-        this.sourceCodeFiles = new ArrayList<>();
+    public ProjectCodeExplorer(SupportedLanguage language) {
+        this.fileExtension = language.getFileExtension();
+        this.projectFilePaths = new ArrayList<>();
     }
 
-    public void collectProjectFiles(Path dir) throws IOException {
-        try (DirectoryStream<Path> stream = Files.newDirectoryStream(dir, glob)) {
-            for (Path entry : stream) {
-                sourceCodeFiles.add(entry);
-            }
-        } catch (DirectoryIteratorException e) {
-            LOGGER.error(e.getMessage());
-            throw e;
-        }
+    public void traverseProjectFiles(Path dir, SourceCodeProcessor handler) throws IOException {
+        Files.find(dir,
+                Integer.MAX_VALUE,
+                (filePath, fileAttr) -> fileAttr.isRegularFile() && filePath.toString().endsWith(fileExtension))
+                .forEach(
+                        entry -> {
+                            LOGGER.info(String.format("Found matching entry with extension %s and path: %s", fileExtension, entry.toString()));
+                            handler.handle(entry);
+                            projectFilePaths.add(entry);
+                        }
+                );
     }
-
-    public void handleSourceFiles(SourceCodeHandler pathHandler) {
-        for (Path entry : sourceCodeFiles) {
-            pathHandler.handle(entry);
-        }
-    }
-
 }
 

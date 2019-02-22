@@ -20,19 +20,20 @@ public class ParachuteExtractor<T> {
     private static Logger LOGGER = LoggerFactory.getLogger(ParachuteExtractor.class);
 
     private T repositoryLocation;
+    private Path tempRepositoryPath;
     private SupportedLanguage lang;
 
-    public ParachuteExtractor(T repositoryLocation) {
+    public ParachuteExtractor(T repositoryLocation, String lang) {
         this.repositoryLocation = repositoryLocation;
+        this.lang = SupportedLanguage.getValue(lang);
     }
 
-    public Path getRepository() throws IOException, GitAPIException {
+    public void cloneRepository() throws IOException, GitAPIException {
         if (repositoryLocation instanceof URL) {
-            getGitHubRepositoryLanguage();
-            return downloadGitHubRepository((URL) repositoryLocation);
+            //getGitHubRepositoryLanguage();
+            downloadGitHubRepository((URL) repositoryLocation);
         } else {
             // TODO copy local repository to a temp folder for processing
-            return null;
         }
     }
 
@@ -42,7 +43,7 @@ public class ParachuteExtractor<T> {
         this.lang = SupportedLanguage.getValue(repo.getLanguage());
     }
 
-    private Path downloadGitHubRepository(URL url) throws IOException, GitAPIException {
+    private void downloadGitHubRepository(URL url) throws IOException, GitAPIException {
 
         String[] tokens = url.toString().split("/");
         String repositoryName = tokens[tokens.length - 1];
@@ -50,25 +51,24 @@ public class ParachuteExtractor<T> {
         Path tempDir = Files.createTempDirectory(repositoryName + "-");
 
         LOGGER.info("Cloning " + url + " into " + tempDir.toString());
-        try (Git git = Git.cloneRepository()
+        try (Git ignored = Git.cloneRepository()
                 .setURI(url.toString())
                 .setDirectory(tempDir.toFile())
                 .call()) {
             LOGGER.info("Repository cloned successfully to " + tempDir.toAbsolutePath().toString());
-
-            return tempDir;
+            this.tempRepositoryPath = tempDir;
         } catch (GitAPIException e) {
-            LOGGER.info("Exception occurred while cloning repo", e.getMessage());
+            LOGGER.info("Exception occurred while cloning GitHub repository", e.getMessage());
             e.printStackTrace();
             throw e;
         }
     }
 
-    public void parseParachuteProject(Path projectPath) {
+    public void parseParachuteProject() throws IOException {
+        LOGGER.info("Starting to parse the project directory");
         if (Objects.nonNull(lang) && SupportedLanguage.JAVA.equals(lang)) {
-            JavaParachuteProjectAnalyzer analyzer = new JavaParachuteProjectAnalyzer(projectPath);
-
-
+            JavaParachuteProjectAnalyzer analyzer = new JavaParachuteProjectAnalyzer(this.tempRepositoryPath);
+            analyzer.traverseProject();
         }
     }
 }

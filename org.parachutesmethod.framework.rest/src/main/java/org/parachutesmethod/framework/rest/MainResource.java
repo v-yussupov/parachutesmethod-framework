@@ -3,6 +3,8 @@ package org.parachutesmethod.framework.rest;
 import java.io.IOException;
 import java.net.URL;
 
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -15,6 +17,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.parachutesmethod.framework.extraction.ParachuteExtractor;
+import org.parachutesmethod.framework.extraction.filehandling.SupportedLanguage;
 
 @Path("/")
 @Api(value = "mainresource", description = "Sample description")
@@ -29,17 +32,24 @@ public class MainResource {
 
     @POST
     @Path("extract")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response extractRepository(@ApiParam(name = "url", required = true) String url) {
+    public Response extractParachute(@ApiParam(name = "url", required = true) @FormParam("url") String url,
+                                     @ApiParam(name = "lang", required = true) @FormParam("lang") String lang) {
         try {
-            ParachuteExtractor p = new ParachuteExtractor<>(new URL(url));
-            java.nio.file.Path projectPath = p.getRepository();
-            p.parseParachuteProject(projectPath);
-
-
+            ParachuteExtractor p = new ParachuteExtractor<>(new URL(url), lang);
+            p.cloneRepository();
+            p.parseParachuteProject();
         } catch (IOException | GitAPIException e) {
             return Response.serverError().entity(e.getMessage()).build();
         }
+        return Response.ok().build();
+    }
+
+    @POST
+    @Path("generate")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response generateParachute() {
         return Response.ok().build();
     }
 }

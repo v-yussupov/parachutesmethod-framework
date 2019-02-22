@@ -1,23 +1,23 @@
 package org.parachutesmethod.framework.extraction.filehandling;
 
 public enum SupportedLanguage {
-    JAVA("java", "*.java"),
-    PYTHON("python", "*.py");
+    JAVA("java", ".java"),
+    PYTHON("python", ".py");
 
     private final String name;
-    private final String globbingPattern;
+    private final String fileExtension;
 
-    SupportedLanguage(final String name, final String globbingPattern) {
+    SupportedLanguage(final String name, final String fileExtension) {
         this.name = name;
-        this.globbingPattern = globbingPattern;
+        this.fileExtension = fileExtension;
     }
 
     String getName() {
         return name;
     }
 
-    String getGlobbingPattern() {
-        return globbingPattern;
+    String getFileExtension() {
+        return fileExtension;
     }
 
     public static SupportedLanguage getValue(String test) {
