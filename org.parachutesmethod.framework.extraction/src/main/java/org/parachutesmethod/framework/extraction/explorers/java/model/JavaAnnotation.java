@@ -4,6 +4,7 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
+import org.parachutesmethod.framework.extraction.Constants;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -12,6 +13,7 @@ public class JavaAnnotation {
     private String name;
     private AnnotationExpr annotationExpression;
     private boolean isMarkerAnnotation;
+    private boolean isParachuteAnnotation;
     private Map<String, String> parameters;
 
     JavaAnnotation(AnnotationExpr annotationExpression) {
@@ -28,6 +30,10 @@ public class JavaAnnotation {
                 parameters.put(pair.getNameAsString(), pair.getValue().toString());
             }
         }
+        if (Constants.PARACHUTE_METHOD_ANNOTATION.equals(annotationExpression.getNameAsString())) {
+            isParachuteAnnotation = true;
+        }
+
     }
 
     public String getName() {
@@ -44,5 +50,9 @@ public class JavaAnnotation {
 
     public Map<String, String> getParameters() {
         return parameters;
+    }
+
+    public boolean isParachuteAnnotation() {
+        return isParachuteAnnotation;
     }
 }

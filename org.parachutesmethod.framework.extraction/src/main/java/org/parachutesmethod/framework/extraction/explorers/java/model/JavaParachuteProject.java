@@ -1,18 +1,15 @@
 package org.parachutesmethod.framework.extraction.explorers.java.model;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 
 public class JavaParachuteProject {
 
-    private List<JavaProjectFile> projectFiles = new ArrayList<>();
+    private List<JavaProjectFile> projectFiles;
+    private boolean withParachutes;
 
-    public JavaParachuteProject(List<Path> projectFilePaths) throws IOException {
-        for (Path path : projectFilePaths) {
-            projectFiles.add(new JavaProjectFile(path));
-        }
+    public JavaParachuteProject(List<JavaProjectFile> projectFiles) {
+        this.projectFiles = projectFiles;
+        this.withParachutes = projectFiles.stream().anyMatch(JavaProjectFile::isWithParachutes);
     }
 
     public List<JavaProjectFile> getFiles() {
@@ -22,4 +19,13 @@ public class JavaParachuteProject {
     public void printProjectFiles() {
         projectFiles.forEach(System.out::println);
     }
+
+    public boolean isWithParachutes() {
+        return withParachutes;
+    }
+
+    public void prepareParachuteMethods() {
+
+    }
+
 }

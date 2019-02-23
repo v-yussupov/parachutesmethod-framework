@@ -1,21 +1,21 @@
 package org.parachutesmethod.framework.extraction;
 
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GitHub;
+import org.parachutesmethod.framework.extraction.exceptions.NotSupportedLanguageException;
+import org.parachutesmethod.framework.extraction.exceptions.NotSupportedRepositoryTypeException;
+import org.parachutesmethod.framework.extraction.explorers.SupportedLanguage;
+import org.parachutesmethod.framework.extraction.explorers.java.JavaParachuteProjectExplorer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
-
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GitHub;
-import org.parachutesmethod.framework.extraction.explorers.java.JavaParachuteProjectExplorer;
-import org.parachutesmethod.framework.extraction.exceptions.NotSupportedLanguageException;
-import org.parachutesmethod.framework.extraction.exceptions.NotSupportedRepositoryTypeException;
-import org.parachutesmethod.framework.extraction.explorers.SupportedLanguage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ParachuteExtractor<T> {
 
@@ -72,6 +72,18 @@ public class ParachuteExtractor<T> {
         LOGGER.info("Starting to parse the project directory");
         if (Objects.nonNull(lang) && SupportedLanguage.JAVA.equals(lang)) {
             JavaParachuteProjectExplorer explorer = new JavaParachuteProjectExplorer(this.tempRepositoryPath);
+            explorer.parseProject();
+            explorer.getProject().printProjectFiles();
+
+            if (explorer.getProject().isWithParachutes()) {
+                //TODO continue extraction process
+
+
+            } else {
+                //TODO complete extraction process
+            }
         }
     }
+
+
 }

@@ -19,10 +19,13 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.parachutesmethod.framework.extraction.ParachuteExtractor;
 import org.parachutesmethod.framework.extraction.exceptions.NotSupportedLanguageException;
 import org.parachutesmethod.framework.extraction.exceptions.NotSupportedRepositoryTypeException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/")
 @Api(value = "mainresource", description = "Sample description")
 public class MainResource {
+    private static Logger LOGGER = LoggerFactory.getLogger(MainResource.class);
 
     @GET
     @Produces(MediaType.TEXT_PLAIN)
@@ -42,6 +45,8 @@ public class MainResource {
             p.cloneRepository();
             p.parseParachuteProject();
         } catch (IOException | GitAPIException | NotSupportedLanguageException | NotSupportedRepositoryTypeException e) {
+            LOGGER.error(e.getMessage());
+            e.printStackTrace();
             return Response.serverError().entity(e.getMessage()).build();
         }
         return Response.ok().build();

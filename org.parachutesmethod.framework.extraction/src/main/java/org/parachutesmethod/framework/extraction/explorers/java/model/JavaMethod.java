@@ -1,7 +1,6 @@
 package org.parachutesmethod.framework.extraction.explorers.java.model;
 
 import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.expr.AnnotationExpr;
 import org.parachutesmethod.framework.extraction.Constants;
 
 import java.util.ArrayList;
@@ -20,25 +19,25 @@ public class JavaMethod {
         this.methodDeclaration = methodDeclaration;
         this.name = methodDeclaration.getNameAsString();
         this.annotations = new ArrayList<>();
-        collectAnnotations();
-        System.out.println(toString());
+        findAnnotations();
     }
 
     public List<JavaAnnotation> getAnnotations() {
         return annotations;
     }
 
-    public boolean isParachuteMethod() {
+    boolean isParachuteMethod() {
         return isParachuteMethod;
     }
 
-    private void collectAnnotations() {
-        List<AnnotationExpr> annotationExpressions = new ArrayList<>();
+    private void findAnnotations() {
         if (methodDeclaration.isAnnotationPresent(Constants.PARACHUTE_METHOD_ANNOTATION)) {
             this.isParachuteMethod = true;
         }
         if (methodDeclaration.getAnnotations().isNonEmpty()) {
             methodDeclaration.getAnnotations().forEach(a -> {
+                JavaAnnotation annotation = new JavaAnnotation(a);
+                isParachuteMethod = annotation.isParachuteAnnotation();
                 annotations.add(new JavaAnnotation(a));
             });
         }
