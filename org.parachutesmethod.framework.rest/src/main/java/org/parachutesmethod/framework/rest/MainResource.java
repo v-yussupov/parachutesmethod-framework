@@ -17,7 +17,8 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.parachutesmethod.framework.extraction.ParachuteExtractor;
-import org.parachutesmethod.framework.extraction.filehandling.SupportedLanguage;
+import org.parachutesmethod.framework.extraction.exceptions.NotSupportedLanguageException;
+import org.parachutesmethod.framework.extraction.exceptions.NotSupportedRepositoryTypeException;
 
 @Path("/")
 @Api(value = "mainresource", description = "Sample description")
@@ -40,7 +41,7 @@ public class MainResource {
             ParachuteExtractor p = new ParachuteExtractor<>(new URL(url), lang);
             p.cloneRepository();
             p.parseParachuteProject();
-        } catch (IOException | GitAPIException e) {
+        } catch (IOException | GitAPIException | NotSupportedLanguageException | NotSupportedRepositoryTypeException e) {
             return Response.serverError().entity(e.getMessage()).build();
         }
         return Response.ok().build();

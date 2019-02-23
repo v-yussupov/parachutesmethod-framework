@@ -1,4 +1,6 @@
-package org.parachutesmethod.framework.extraction.filehandling;
+package org.parachutesmethod.framework.extraction.explorers;
+
+import org.parachutesmethod.framework.extraction.exceptions.NotSupportedLanguageException;
 
 public enum SupportedLanguage {
     JAVA("java", ".java"),
@@ -12,15 +14,15 @@ public enum SupportedLanguage {
         this.fileExtension = fileExtension;
     }
 
-    String getName() {
+    public String getName() {
         return name;
     }
 
-    String getFileExtension() {
+    public String getFileExtension() {
         return fileExtension;
     }
 
-    public static SupportedLanguage getValue(String test) {
+    public static SupportedLanguage getValue(String test) throws NotSupportedLanguageException {
         if (test == null) {
             throw new NullPointerException("alias cannot be null");
         }
@@ -30,7 +32,7 @@ public enum SupportedLanguage {
             }
         }
 
-        throw new IllegalArgumentException("The language " + test + " is not supported");
+        throw new NotSupportedLanguageException("The language " + test + " is not supported");
     }
 
 }

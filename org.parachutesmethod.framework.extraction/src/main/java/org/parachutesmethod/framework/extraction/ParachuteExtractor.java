@@ -10,8 +10,10 @@ import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.kohsuke.github.GHRepository;
 import org.kohsuke.github.GitHub;
-import org.parachutesmethod.framework.extraction.analyzers.java.JavaParachuteProjectAnalyzer;
-import org.parachutesmethod.framework.extraction.filehandling.SupportedLanguage;
+import org.parachutesmethod.framework.extraction.explorers.java.JavaParachuteProjectExplorer;
+import org.parachutesmethod.framework.extraction.exceptions.NotSupportedLanguageException;
+import org.parachutesmethod.framework.extraction.exceptions.NotSupportedRepositoryTypeException;
+import org.parachutesmethod.framework.extraction.explorers.SupportedLanguage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,21 +25,23 @@ public class ParachuteExtractor<T> {
     private Path tempRepositoryPath;
     private SupportedLanguage lang;
 
-    public ParachuteExtractor(T repositoryLocation, String lang) {
+    public ParachuteExtractor(T repositoryLocation, String lang) throws NotSupportedLanguageException {
         this.repositoryLocation = repositoryLocation;
         this.lang = SupportedLanguage.getValue(lang);
     }
 
-    public void cloneRepository() throws IOException, GitAPIException {
+    public void cloneRepository() throws IOException, GitAPIException, NotSupportedRepositoryTypeException {
         if (repositoryLocation instanceof URL) {
-            //getGitHubRepositoryLanguage();
             downloadGitHubRepository((URL) repositoryLocation);
-        } else {
+        } else if (repositoryLocation instanceof Path) {
             // TODO copy local repository to a temp folder for processing
+            LOGGER.info("local repositories are not yet supported");
+        } else {
+            throw new NotSupportedRepositoryTypeException("Exception occurred while cloning repository: provided location is not supported");
         }
     }
 
-    private void getGitHubRepositoryLanguage() throws IOException {
+    private void getGitHubRepositoryLanguage() throws IOException, NotSupportedLanguageException {
         GitHub github = GitHub.connect();
         GHRepository repo = github.getRepository(repositoryLocation.toString());
         this.lang = SupportedLanguage.getValue(repo.getLanguage());
@@ -67,8 +71,7 @@ public class ParachuteExtractor<T> {
     public void parseParachuteProject() throws IOException {
         LOGGER.info("Starting to parse the project directory");
         if (Objects.nonNull(lang) && SupportedLanguage.JAVA.equals(lang)) {
-            JavaParachuteProjectAnalyzer analyzer = new JavaParachuteProjectAnalyzer(this.tempRepositoryPath);
-            analyzer.traverseProject();
+            JavaParachuteProjectExplorer explorer = new JavaParachuteProjectExplorer(this.tempRepositoryPath);
         }
     }
 }
