@@ -1,16 +1,16 @@
 {
   "resourcePackages": [
-    "io.swagger.sample.resource"
+    "org.parachutesmethod.framework.rest"
   ],
   "prettyPrint": true,
   "openAPI": {
     "info": {
       "version": "1.0",
       "title": "Parachutes Framework configuration file",
-      "description": "This is an API",
+      "description": "This is a basic API",
       "contact": {
         "name": "Vladimir Yussupov",
-        "email": "apiteam@swagger.io"
+        "email": "vladimir.yussupov@iaas.uni-stuttgart.de"
       },
       "license": {
         "name": "Apache 2.0",
