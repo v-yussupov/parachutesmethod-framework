@@ -22,7 +22,8 @@ public class ParachuteExtractor<T> {
     private static Logger LOGGER = LoggerFactory.getLogger(ParachuteExtractor.class);
 
     private T repositoryLocation;
-    private Path tempRepositoryPath;
+    private Path tempRootPath;
+    private Path tempProjectPath;
     private SupportedLanguage lang;
 
     public ParachuteExtractor(T repositoryLocation, String lang) throws NotSupportedLanguageException {
@@ -52,15 +53,16 @@ public class ParachuteExtractor<T> {
         String[] tokens = url.toString().split("/");
         String repositoryName = tokens[tokens.length - 1];
 
-        Path tempDir = Files.createTempDirectory(repositoryName + "-");
+        tempRootPath = Files.createTempDirectory(repositoryName + "-");
+        Path tempProjectDir = tempRootPath.resolve(Constants.SOURCE_PROJECT_FOLDER);
 
-        LOGGER.info("Cloning " + url + " into " + tempDir.toString());
+        LOGGER.info("Cloning " + url + " into " + tempProjectDir.toString());
         try (Git ignored = Git.cloneRepository()
                 .setURI(url.toString())
-                .setDirectory(tempDir.toFile())
+                .setDirectory(tempProjectDir.toFile())
                 .call()) {
-            LOGGER.info("Repository cloned successfully to " + tempDir.toAbsolutePath().toString());
-            this.tempRepositoryPath = tempDir;
+            LOGGER.info("Repository cloned successfully to " + tempProjectDir.toAbsolutePath().toString());
+            this.tempProjectPath = tempProjectDir;
         } catch (GitAPIException e) {
             LOGGER.info("Exception occurred while cloning GitHub repository", e.getMessage());
             e.printStackTrace();
@@ -71,13 +73,18 @@ public class ParachuteExtractor<T> {
     public void parseParachuteProject() throws IOException {
         LOGGER.info("Starting to parse the project directory");
         if (Objects.nonNull(lang) && SupportedLanguage.JAVA.equals(lang)) {
-            JavaParachuteProjectExplorer explorer = new JavaParachuteProjectExplorer(this.tempRepositoryPath);
+            JavaParachuteProjectExplorer explorer = new JavaParachuteProjectExplorer(this.tempProjectPath);
             explorer.parseProject();
             explorer.getProject().printProjectFiles();
 
+            LOGGER.info("Project Classes");
+            explorer.getProject().getProjectClasses().forEach(System.out::println);
+
+            LOGGER.info("Parachute methods");
+            explorer.getProject().getParachuteMethods().forEach(System.out::println);
+
             if (explorer.getProject().isWithParachutes()) {
                 //TODO continue extraction process
-
 
             } else {
                 //TODO complete extraction process
@@ -85,5 +92,7 @@ public class ParachuteExtractor<T> {
         }
     }
 
-
+    public Path getTempRootPath() {
+        return tempRootPath;
+    }
 }

@@ -52,6 +52,14 @@ public class JavaAnnotation {
         return parameters;
     }
 
+    public boolean containsParameter(String name) {
+        return parameters.containsKey(name);
+    }
+
+    public String getParameterByName(String name) {
+        return parameters.get(name);
+    }
+
     public boolean isParachuteAnnotation() {
         return isParachuteAnnotation;
     }

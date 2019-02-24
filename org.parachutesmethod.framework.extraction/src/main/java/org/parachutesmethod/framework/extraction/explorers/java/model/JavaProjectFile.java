@@ -1,11 +1,13 @@
 package org.parachutesmethod.framework.extraction.explorers.java.model;
 
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.google.common.base.Strings;
 import org.parachutesmethod.framework.extraction.Constants;
+import org.parachutesmethod.framework.extraction.explorers.java.visitors.ClassOrInterfaceDeclarationCollector;
 import org.parachutesmethod.framework.extraction.explorers.java.visitors.MethodDeclarationCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,12 +21,13 @@ public class JavaProjectFile {
 
     private Path filePath;
     private String fileName;
+    private CompilationUnit parsedFile;
     private String packageName;
     private String classOrInterfaceName;
-    private boolean isInterface;
+    private boolean primaryTypeInterface;
     private List<JavaMethod> methods = new ArrayList<>();
     private boolean withParachutes;
-    private CompilationUnit parsedFile;
+    private List<JavaClass> classes = new ArrayList<>();
 
     public JavaProjectFile(Path filePath, CompilationUnit parsedFile) {
         this.filePath = filePath;
@@ -39,9 +42,10 @@ public class JavaProjectFile {
 
         if (parsedFile.getPrimaryType().isPresent()) {
             classOrInterfaceName = parsedFile.getPrimaryTypeName().toString();
-            isInterface = ((ClassOrInterfaceDeclaration) parsedFile.getPrimaryType().get()).isInterface();
+            primaryTypeInterface = ((ClassOrInterfaceDeclaration) parsedFile.getPrimaryType().get()).isInterface();
         }
         findJavaMethods();
+        findJavaClasses();
     }
 
     private void findJavaMethods() {
@@ -52,10 +56,38 @@ public class JavaProjectFile {
             methodDeclarations.forEach(md -> {
                 JavaMethod method = new JavaMethod(this, md);
                 withParachutes |= method.isParachuteMethod();
-                methods.add(new JavaMethod(this, md));
+                methods.add(method);
             });
         }
     }
+
+    private void findJavaClasses() {
+        List<ClassOrInterfaceDeclaration> classDeclarations = new ArrayList<>();
+        VoidVisitor<List<ClassOrInterfaceDeclaration>> classDeclarationCollector = new ClassOrInterfaceDeclarationCollector();
+        classDeclarationCollector.visit(parsedFile, classDeclarations);
+        if (!classDeclarations.isEmpty()) {
+            classDeclarations.forEach(cd -> {
+                if (!cd.isInterface()) {
+                    System.out.println("found class: " + cd.getNameAsString());
+                    JavaClass javaClass = new JavaClass(cd, packageName);
+
+                    List<JavaClass> innerClasses = new ArrayList<>();
+                    for (Node n : cd.getChildNodes()) {
+                        if (n instanceof ClassOrInterfaceDeclaration) {
+                            innerClasses.add(new JavaClass((ClassOrInterfaceDeclaration) n, packageName));
+                        }
+                    }
+                    javaClass.setDirectInnerClasses(innerClasses);
+                    classes.add(javaClass);
+                }
+            });
+        }
+    }
+
+    private void findChildJavaClasses(ClassOrInterfaceDeclaration coid, List<JavaClass> innerClasses) {
+
+    }
+
 
     public Path getFilePath() {
         return filePath;
@@ -77,12 +109,16 @@ public class JavaProjectFile {
         return classOrInterfaceName;
     }
 
-    public boolean isInterface() {
-        return isInterface;
+    public boolean isPrimaryTypeInterface() {
+        return primaryTypeInterface;
     }
 
     public List<JavaMethod> getMethods() {
         return methods;
+    }
+
+    public List<JavaClass> getClasses() {
+        return classes;
     }
 
     @Override
@@ -91,6 +127,7 @@ public class JavaProjectFile {
         sb.append(Strings.repeat("=", filePath.toString().length()));
         sb.append(System.lineSeparator());
         sb.append(String.format("Filename: %s,\nPath: %s,\nPackage: %s,\nMethods_Count: %d,\nHasParachutes: %s\n", fileName, filePath, packageName, methods.size(), withParachutes));
+        sb.append(String.format("Classes_Count: %d\n", classes.size()));
         sb.append(Strings.repeat("=", filePath.toString().length()));
         sb.append(System.lineSeparator());
         return sb.toString();
