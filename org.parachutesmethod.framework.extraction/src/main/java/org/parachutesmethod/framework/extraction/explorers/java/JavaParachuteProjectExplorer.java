@@ -24,9 +24,8 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
     private static Logger LOGGER = LoggerFactory.getLogger(JavaParachuteProjectExplorer.class);
 
     private boolean hasParachutes;
-    private Set<JavaClass> projectClasses = new HashSet<>();
-    private Set<JavaMethod> parachuteMethods = new HashSet<>();
     private List<JavaProjectFile> projectFiles = new ArrayList<>();
+    private Set<JavaClass> projectClasses = new HashSet<>();
 
     public JavaParachuteProjectExplorer(Path projectPath) {
         super(projectPath, SupportedLanguage.JAVA);
@@ -42,15 +41,13 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
             try (FileInputStream in = new FileInputStream(path.toString())) {
                 LOGGER.info(String.format("Starting to parse project file %s", path.getFileName().toString()));
                 CompilationUnit parsedFile = JavaParser.parse(in);
+
                 JavaProjectFile projectFile = new JavaProjectFile(path, parsedFile);
 
                 this.hasParachutes |= projectFile.isWithParachutes();
-
                 this.projectClasses.addAll(projectFile.getClasses());
-
-                this.parachuteMethods.addAll(projectFile.getMethods().stream().filter(JavaMethod::isParachuteMethod).collect(Collectors.toList()));
-
                 this.projectFiles.add(projectFile);
+
             } catch (IOException e) {
                 LOGGER.error(e.getMessage());
                 e.printStackTrace();
@@ -67,6 +64,13 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
     }
 
     public Set<JavaMethod> getParachuteMethods() {
+        Set<JavaMethod> parachuteMethods = new HashSet<>();
+        projectFiles.forEach(f -> parachuteMethods.addAll(
+                f.getMethods()
+                        .stream()
+                        .filter(JavaMethod::isParachuteMethod)
+                        .collect(Collectors.toList()))
+        );
         return parachuteMethods;
     }
 
@@ -83,6 +87,6 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
     }
 
     public void printProjectMethods() {
-        parachuteMethods.forEach(System.out::println);
+        getParachuteMethods().forEach(System.out::println);
     }
 }

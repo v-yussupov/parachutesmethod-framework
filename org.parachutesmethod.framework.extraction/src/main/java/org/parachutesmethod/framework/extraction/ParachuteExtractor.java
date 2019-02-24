@@ -87,6 +87,9 @@ public class ParachuteExtractor<T> {
 
             if (explorer.hasParachutes()) {
                 //TODO continue extraction process
+                // forEach parachute:
+                // 1. analyze inputs and outputs
+                //    -- if POJOs are used as inputs -> POJOs have to be included as separate .java files
 
             } else {
                 //TODO complete extraction process

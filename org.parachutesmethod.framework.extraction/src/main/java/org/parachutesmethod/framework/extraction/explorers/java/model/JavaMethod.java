@@ -1,5 +1,6 @@
 package org.parachutesmethod.framework.extraction.explorers.java.model;
 
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.type.Type;
@@ -12,23 +13,30 @@ import java.util.List;
 
 public class JavaMethod {
 
-    private JavaProjectFile parent;
+    private JavaProjectFile parentFile;
+    private String parentDeclarationName;
+    private boolean classAsParentDeclaration;
     private String name;
     private List<JavaAnnotation> annotations;
     private boolean isParachuteMethod;
     private MethodDeclaration methodDeclaration;
     private Type returnType;
-    private List<JavaClass> requestResponsePOJOs = new ArrayList<>();
     private List<Parameter> inputParameters;
 
     JavaMethod(JavaProjectFile parent, MethodDeclaration methodDeclaration) {
-        this.parent = parent;
+        this.parentFile = parent;
         this.methodDeclaration = methodDeclaration;
         this.name = methodDeclaration.getNameAsString();
         this.annotations = new ArrayList<>();
         findAnnotations();
         this.returnType = methodDeclaration.getType();
         this.inputParameters = methodDeclaration.getParameters();
+
+        if (methodDeclaration.getParentNode().isPresent()) {
+            ClassOrInterfaceDeclaration cd = (ClassOrInterfaceDeclaration) methodDeclaration.getParentNode().get();
+            parentDeclarationName = cd.getNameAsString();
+            classAsParentDeclaration = !cd.isInterface();
+        }
     }
 
     public List<JavaAnnotation> getAnnotations() {
@@ -56,8 +64,8 @@ public class JavaMethod {
         return name;
     }
 
-    public JavaProjectFile getParent() {
-        return parent;
+    public JavaProjectFile getParentFile() {
+        return parentFile;
     }
 
     public Type getReturnType() {
@@ -68,12 +76,20 @@ public class JavaMethod {
         return inputParameters;
     }
 
+    public String getParentDeclarationName() {
+        return parentDeclarationName;
+    }
+
+    public boolean isClassAsParentDeclaration() {
+        return classAsParentDeclaration;
+    }
+
     @Override
     public int hashCode() {
         return new HashCodeBuilder(13, 31). // two randomly chosen prime numbers
                 append(name).
-                append(parent.getFileName()).
-                append(parent.getFilePath().toString()).
+                append(parentFile.getFileName()).
+                append(parentFile.getFilePath().toString()).
                 toHashCode();
     }
 
@@ -87,15 +103,17 @@ public class JavaMethod {
         JavaMethod method = (JavaMethod) obj;
         return new EqualsBuilder().
                 append(name, method.getName()).
-                append(parent.getFileName(), method.getParent().getFileName()).
-                append(parent.getFilePath().toString(), method.getParent().getFilePath().toString()).
+                append(parentFile.getFileName(), method.getParentFile().getFileName()).
+                append(parentFile.getFilePath().toString(), method.getParentFile().getFilePath().toString()).
                 isEquals();
     }
 
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Method: %s, Annotations_Count: %d, hasParachuteAnnotation: %s", name, annotations.size(), isParachuteMethod));
+        sb.append(String.format("Method: %s, Annotations_Count: %d, hasParachuteAnnotation: %s\n", name, annotations.size(), isParachuteMethod));
+        sb.append(String.format("Parent ClassOrInterface Name: %s\n", parentDeclarationName));
+        sb.append(String.format("Parent Declaration is a Class: %s\n", classAsParentDeclaration));
         sb.append(System.lineSeparator());
         sb.append(String.format("Method body: \n%s\n", methodDeclaration));
         return sb.toString();

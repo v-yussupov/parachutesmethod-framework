@@ -83,10 +83,9 @@ public class JavaClass {
         StringBuilder sb = new StringBuilder();
         sb.append(String.format("Class: %s, Package: %s", name, packageName));
         sb.append(System.lineSeparator());
-        sb.append(String.format("Inner classes count: \n%d\n", innerClasses.size()));
-        sb.append(System.lineSeparator());
+        sb.append(String.format("Inner classes count: %d\n", innerClasses.size()));
         innerClasses.forEach(c -> {
-            sb.append(String.format("Inner class: \n%s\n", c.getName()));
+            sb.append(String.format("Inner class: %s", c.getName()));
             sb.append(System.lineSeparator());
         });
 
