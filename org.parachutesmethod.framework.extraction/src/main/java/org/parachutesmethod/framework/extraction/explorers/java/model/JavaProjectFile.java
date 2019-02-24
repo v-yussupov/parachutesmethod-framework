@@ -68,7 +68,6 @@ public class JavaProjectFile {
         if (!classDeclarations.isEmpty()) {
             classDeclarations.forEach(cd -> {
                 if (!cd.isInterface()) {
-                    System.out.println("found class: " + cd.getNameAsString());
                     JavaClass javaClass = new JavaClass(cd, packageName);
 
                     List<JavaClass> innerClasses = new ArrayList<>();

@@ -35,7 +35,7 @@ public class JavaMethod {
         return annotations;
     }
 
-    boolean isParachuteMethod() {
+    public boolean isParachuteMethod() {
         return isParachuteMethod;
     }
 

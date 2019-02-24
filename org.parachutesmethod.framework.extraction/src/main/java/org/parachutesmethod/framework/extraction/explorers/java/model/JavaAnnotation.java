@@ -33,7 +33,6 @@ public class JavaAnnotation {
         if (Constants.PARACHUTE_METHOD_ANNOTATION.equals(annotationExpression.getNameAsString())) {
             isParachuteAnnotation = true;
         }
-
     }
 
     public String getName() {

@@ -22,9 +22,9 @@ public class ParachuteExtractor<T> {
     private static Logger LOGGER = LoggerFactory.getLogger(ParachuteExtractor.class);
 
     private T repositoryLocation;
+    private SupportedLanguage lang;
     private Path tempRootPath;
     private Path tempProjectPath;
-    private SupportedLanguage lang;
 
     public ParachuteExtractor(T repositoryLocation, String lang) throws NotSupportedLanguageException {
         this.repositoryLocation = repositoryLocation;
@@ -75,15 +75,17 @@ public class ParachuteExtractor<T> {
         if (Objects.nonNull(lang) && SupportedLanguage.JAVA.equals(lang)) {
             JavaParachuteProjectExplorer explorer = new JavaParachuteProjectExplorer(this.tempProjectPath);
             explorer.parseProject();
-            explorer.getProject().printProjectFiles();
+
+            LOGGER.info("Project Files");
+            explorer.printProjectFiles();
 
             LOGGER.info("Project Classes");
-            explorer.getProject().getProjectClasses().forEach(System.out::println);
+            explorer.printProjectClasses();
 
             LOGGER.info("Parachute methods");
-            explorer.getProject().getParachuteMethods().forEach(System.out::println);
+            explorer.printProjectMethods();
 
-            if (explorer.getProject().isWithParachutes()) {
+            if (explorer.hasParachutes()) {
                 //TODO continue extraction process
 
             } else {

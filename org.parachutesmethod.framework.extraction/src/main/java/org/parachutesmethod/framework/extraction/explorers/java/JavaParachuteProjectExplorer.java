@@ -5,7 +5,8 @@ import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
 import org.parachutesmethod.framework.extraction.explorers.ProjectCodeExplorer;
 import org.parachutesmethod.framework.extraction.explorers.SupportedLanguage;
-import org.parachutesmethod.framework.extraction.explorers.java.model.JavaParachuteProject;
+import org.parachutesmethod.framework.extraction.explorers.java.model.JavaClass;
+import org.parachutesmethod.framework.extraction.explorers.java.model.JavaMethod;
 import org.parachutesmethod.framework.extraction.explorers.java.model.JavaProjectFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,40 +15,74 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
     private static Logger LOGGER = LoggerFactory.getLogger(JavaParachuteProjectExplorer.class);
 
-    private JavaParachuteProject project;
+    private boolean hasParachutes;
+    private Set<JavaClass> projectClasses = new HashSet<>();
+    private Set<JavaMethod> parachuteMethods = new HashSet<>();
+    private List<JavaProjectFile> projectFiles = new ArrayList<>();
 
     public JavaParachuteProjectExplorer(Path projectPath) {
         super(projectPath, SupportedLanguage.JAVA);
-    }
-
-    public void parseProject() throws IOException {
-        List<JavaProjectFile> projectFiles = new ArrayList<>();
 
         ParserConfiguration parserConfiguration = new ParserConfiguration()
                 .setAttributeComments(false)
                 .setDoNotAssignCommentsPrecedingEmptyLines(true);
         JavaParser.setStaticConfiguration(parserConfiguration);
+    }
 
+    public void parseProject() throws IOException {
         for (Path path : this.findProjectFiles()) {
-
             try (FileInputStream in = new FileInputStream(path.toString())) {
                 LOGGER.info(String.format("Starting to parse project file %s", path.getFileName().toString()));
                 CompilationUnit parsedFile = JavaParser.parse(in);
-                projectFiles.add(new JavaProjectFile(path, parsedFile));
+                JavaProjectFile projectFile = new JavaProjectFile(path, parsedFile);
+
+                this.hasParachutes |= projectFile.isWithParachutes();
+
+                this.projectClasses.addAll(projectFile.getClasses());
+
+                this.parachuteMethods.addAll(projectFile.getMethods().stream().filter(JavaMethod::isParachuteMethod).collect(Collectors.toList()));
+
+                this.projectFiles.add(projectFile);
             } catch (IOException e) {
                 LOGGER.error(e.getMessage());
                 e.printStackTrace();
             }
         }
-        this.project = new JavaParachuteProject(projectFiles);
     }
 
-    public JavaParachuteProject getProject() {
-        return project;
+    public List<JavaProjectFile> getProjectFiles() {
+        return projectFiles;
+    }
+
+    public Set<JavaClass> getProjectClasses() {
+        return projectClasses;
+    }
+
+    public Set<JavaMethod> getParachuteMethods() {
+        return parachuteMethods;
+    }
+
+    public boolean hasParachutes() {
+        return hasParachutes;
+    }
+
+    public void printProjectFiles() {
+        projectFiles.forEach(System.out::println);
+    }
+
+    public void printProjectClasses() {
+        projectClasses.forEach(System.out::println);
+    }
+
+    public void printProjectMethods() {
+        parachuteMethods.forEach(System.out::println);
     }
 }
