@@ -12,13 +12,13 @@ public class JavaClass {
     private String name;
     private String packageName;
     private TypeDeclaration parent;
-    private ClassOrInterfaceDeclaration body;
+    private ClassOrInterfaceDeclaration classDeclaration;
     private List<JavaClass> innerClasses = new ArrayList<>();
 
     public JavaClass(ClassOrInterfaceDeclaration cd, String packageName) {
         this.name = cd.getNameAsString();
         this.packageName = packageName;
-        this.body = cd;
+        this.classDeclaration = cd;
         if (cd.isNestedType() && cd.getParentNode().isPresent()) {
             this.parent = (TypeDeclaration) cd.getParentNode().get();
         }
@@ -41,19 +41,19 @@ public class JavaClass {
     }
 
     public boolean isStaticClass() {
-        return body.isStatic();
+        return classDeclaration.isStatic();
     }
 
     public boolean isNested() {
-        return body.isNestedType();
+        return classDeclaration.isNestedType();
     }
 
     public TypeDeclaration getParent() {
         return parent;
     }
 
-    public ClassOrInterfaceDeclaration getBody() {
-        return body;
+    public ClassOrInterfaceDeclaration getClassDeclaration() {
+        return classDeclaration;
     }
 
     @Override

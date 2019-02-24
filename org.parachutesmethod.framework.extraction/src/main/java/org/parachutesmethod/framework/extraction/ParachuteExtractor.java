@@ -11,8 +11,9 @@ import org.parachutesmethod.framework.extraction.explorers.java.JavaParachutePro
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -23,15 +24,15 @@ public class ParachuteExtractor<T> {
 
     private T repositoryLocation;
     private SupportedLanguage lang;
-    private Path tempRootPath;
-    private Path tempProjectPath;
+    private Path tempRootDirectoryPath;
+    private Path tempClonedProjectPath;
 
     public ParachuteExtractor(T repositoryLocation, String lang) throws NotSupportedLanguageException {
         this.repositoryLocation = repositoryLocation;
         this.lang = SupportedLanguage.getValue(lang);
     }
 
-    public void cloneRepository() throws IOException, GitAPIException, NotSupportedRepositoryTypeException {
+    private void cloneRepository() throws IOException, GitAPIException, NotSupportedRepositoryTypeException {
         if (repositoryLocation instanceof URL) {
             downloadGitHubRepository((URL) repositoryLocation);
         } else if (repositoryLocation instanceof Path) {
@@ -53,8 +54,8 @@ public class ParachuteExtractor<T> {
         String[] tokens = url.toString().split("/");
         String repositoryName = tokens[tokens.length - 1];
 
-        tempRootPath = Files.createTempDirectory(repositoryName + "-");
-        Path tempProjectDir = tempRootPath.resolve(Constants.SOURCE_PROJECT_FOLDER);
+        tempRootDirectoryPath = Files.createTempDirectory(repositoryName + "-");
+        Path tempProjectDir = tempRootDirectoryPath.resolve(Constants.SOURCE_PROJECT_FOLDER);
 
         LOGGER.info("Cloning " + url + " into " + tempProjectDir.toString());
         try (Git ignored = Git.cloneRepository()
@@ -62,7 +63,7 @@ public class ParachuteExtractor<T> {
                 .setDirectory(tempProjectDir.toFile())
                 .call()) {
             LOGGER.info("Repository cloned successfully to " + tempProjectDir.toAbsolutePath().toString());
-            this.tempProjectPath = tempProjectDir;
+            this.tempClonedProjectPath = tempProjectDir;
         } catch (GitAPIException e) {
             LOGGER.info("Exception occurred while cloning GitHub repository", e.getMessage());
             e.printStackTrace();
@@ -70,11 +71,10 @@ public class ParachuteExtractor<T> {
         }
     }
 
-    public void parseParachuteProject() throws IOException {
+    private void parseProject() throws IOException {
         LOGGER.info("Starting to parse the project directory");
         if (Objects.nonNull(lang) && SupportedLanguage.JAVA.equals(lang)) {
-            JavaParachuteProjectExplorer explorer = new JavaParachuteProjectExplorer(this.tempProjectPath);
-            explorer.parseProject();
+            JavaParachuteProjectExplorer explorer = new JavaParachuteProjectExplorer(this.tempClonedProjectPath);
 
             LOGGER.info("Project Files");
             explorer.printProjectFiles();
@@ -91,13 +91,45 @@ public class ParachuteExtractor<T> {
                 // 1. analyze inputs and outputs
                 //    -- if POJOs are used as inputs -> POJOs have to be included as separate .java files
 
+                Path tempParachuteGenerationBundlesPath = tempRootDirectoryPath.resolve(Constants.GENERATION_BUNDLES_FOLDER);
+
+                explorer.getParachuteMethods().forEach(parachuteMethod -> {
+                    try {
+                        ParachuteMethodDescriptor descriptor = new ParachuteMethodDescriptor(parachuteMethod);
+                        String fileName = descriptor.getParachuteName().concat(SupportedLanguage.JAVA.getFileExtension());
+                        Path dir = tempParachuteGenerationBundlesPath.resolve(descriptor.getParachuteName());
+                        Files.createDirectories(dir);
+                        Files.createFile(dir.resolve(fileName));
+                        writeContentToFile(dir.resolve(fileName).toFile(), descriptor.getPreparedParachute().toString());
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                });
+
             } else {
                 //TODO complete extraction process
             }
         }
     }
 
-    public Path getTempRootPath() {
-        return tempRootPath;
+    public void extractParachutes() throws GitAPIException, NotSupportedRepositoryTypeException, IOException {
+        cloneRepository();
+        parseProject();
+
     }
+
+    public Path getTempRootDirectoryPath() {
+        return tempRootDirectoryPath;
+    }
+
+    public Path getTempClonedProjectPath() {
+        return tempClonedProjectPath;
+    }
+
+    private void writeContentToFile(File file, String content) throws IOException {
+        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8))) {
+            writer.write(content);
+        }
+    }
+
 }

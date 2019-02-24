@@ -2,6 +2,7 @@ package org.parachutesmethod.framework.extraction;
 
 public class Constants {
     public static final String SOURCE_PROJECT_FOLDER = "source";
+    public static final String GENERATION_BUNDLES_FOLDER = "generation-bundles";
 
 
     public static final String PARACHUTE_METHOD_ANNOTATION = "ParachuteMethod";

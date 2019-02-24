@@ -64,6 +64,10 @@ public class JavaMethod {
         return name;
     }
 
+    public MethodDeclaration getMethodDeclaration() {
+        return methodDeclaration;
+    }
+
     public JavaProjectFile getParentFile() {
         return parentFile;
     }

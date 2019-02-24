@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class JavaProjectFile {
     private static Logger LOGGER = LoggerFactory.getLogger(JavaProjectFile.class);
@@ -129,6 +130,10 @@ public class JavaProjectFile {
 
     public List<JavaClass> getClasses() {
         return classes;
+    }
+
+    public Optional<JavaClass> getClassByName(String name) {
+        return classes.stream().filter(c -> c.getName().equals(name)).findFirst();
     }
 
     public List<JavaImport> getImports() {

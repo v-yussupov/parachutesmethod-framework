@@ -27,16 +27,18 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
     private List<JavaProjectFile> projectFiles = new ArrayList<>();
     private Set<JavaClass> projectClasses = new HashSet<>();
 
-    public JavaParachuteProjectExplorer(Path projectPath) {
+    public JavaParachuteProjectExplorer(Path projectPath) throws IOException {
         super(projectPath, SupportedLanguage.JAVA);
 
         ParserConfiguration parserConfiguration = new ParserConfiguration()
                 .setAttributeComments(false)
                 .setDoNotAssignCommentsPrecedingEmptyLines(true);
         JavaParser.setStaticConfiguration(parserConfiguration);
+
+        parseProject();
     }
 
-    public void parseProject() throws IOException {
+    private void parseProject() throws IOException {
         for (Path path : this.findProjectFiles()) {
             try (FileInputStream in = new FileInputStream(path.toString())) {
                 LOGGER.info(String.format("Starting to parse project file %s", path.getFileName().toString()));
