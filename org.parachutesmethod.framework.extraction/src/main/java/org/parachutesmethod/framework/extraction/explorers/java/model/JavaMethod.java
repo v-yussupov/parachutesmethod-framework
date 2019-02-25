@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
@@ -15,14 +16,19 @@ import org.parachutesmethod.framework.extraction.Constants;
 public class JavaMethod {
 
     private JavaProjectFile parentFile;
+    @JsonProperty
+    private String name;
+    @JsonProperty
     private String parentDeclarationName;
     private boolean classAsParentDeclaration;
-    private String name;
     private List<JavaAnnotation> annotations;
     private boolean isParachuteMethod;
     private MethodDeclaration methodDeclaration;
     private Type returnType;
     private List<Parameter> inputParameters;
+
+    public JavaMethod() {
+    }
 
     JavaMethod(JavaProjectFile parent, MethodDeclaration methodDeclaration) {
         this.parentFile = parent;

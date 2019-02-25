@@ -1,5 +1,6 @@
 package org.parachutesmethod.framework.extraction;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.kohsuke.github.GHRepository;
@@ -78,10 +79,6 @@ public class ParachuteExtractor<T> {
             explorer.printProjectDetails();
 
             if (explorer.hasParachutes()) {
-                //TODO continue extraction process
-                // forEach parachute:
-                // 1. analyze inputs and outputs
-                //    -- if POJOs are used as inputs -> POJOs have to be included as separate .java files
 
                 Path tempParachuteGenerationBundlesPath = tempRootDirectoryPath.resolve(Constants.GENERATION_BUNDLES_FOLDER);
 
@@ -93,13 +90,17 @@ public class ParachuteExtractor<T> {
                         Files.createDirectories(dir);
                         Files.createFile(dir.resolve(fileName));
                         writeContentToFile(dir.resolve(fileName).toFile(), descriptor.getPreparedParachute().toString());
+
+                        Path spec = dir.resolve(Constants.PARACHUTE_METADATA_FILE.concat(Constants.EXTENSION_JSON));
+                        Files.createFile(spec);
+
+                        ObjectMapper mapper = new ObjectMapper();
+                        mapper.writerWithDefaultPrettyPrinter().writeValue(spec.toFile(), descriptor);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 });
 
-            } else {
-                //TODO stop extraction process
             }
         }
     }
