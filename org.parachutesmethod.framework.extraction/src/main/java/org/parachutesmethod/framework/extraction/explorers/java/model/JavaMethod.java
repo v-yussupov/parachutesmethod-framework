@@ -1,5 +1,9 @@
 package org.parachutesmethod.framework.extraction.explorers.java.model;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
@@ -7,9 +11,6 @@ import com.github.javaparser.ast.type.Type;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.parachutesmethod.framework.extraction.Constants;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class JavaMethod {
 
@@ -41,6 +42,12 @@ public class JavaMethod {
 
     public List<JavaAnnotation> getAnnotations() {
         return annotations;
+    }
+
+    public Optional<JavaAnnotation> getParachuteAnnotation() {
+        return annotations.stream()
+                .filter(JavaAnnotation::isParachuteAnnotation)
+                .findFirst();
     }
 
     public boolean isParachuteMethod() {

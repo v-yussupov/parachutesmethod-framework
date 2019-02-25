@@ -75,15 +75,7 @@ public class ParachuteExtractor<T> {
         LOGGER.info("Starting to parse the project directory");
         if (Objects.nonNull(lang) && SupportedLanguage.JAVA.equals(lang)) {
             JavaParachuteProjectExplorer explorer = new JavaParachuteProjectExplorer(this.tempClonedProjectPath);
-
-            LOGGER.info("Project Files");
-            explorer.printProjectFiles();
-
-            LOGGER.info("Project Classes");
-            explorer.printProjectClasses();
-
-            LOGGER.info("Parachute methods");
-            explorer.printProjectMethods();
+            explorer.printProjectDetails();
 
             if (explorer.hasParachutes()) {
                 //TODO continue extraction process
@@ -107,7 +99,7 @@ public class ParachuteExtractor<T> {
                 });
 
             } else {
-                //TODO complete extraction process
+                //TODO stop extraction process
             }
         }
     }
