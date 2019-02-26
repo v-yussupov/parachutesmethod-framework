@@ -1,17 +1,18 @@
 package org.parachutesmethod.framework.extraction.explorers.java.model;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.type.Type;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.parachutesmethod.framework.extraction.Constants;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public class JavaMethod {
 
@@ -36,7 +37,7 @@ public class JavaMethod {
         this.parentFile = parent;
         this.parentClass = parentClass;
         this.methodDeclaration = methodDeclaration;
-        this.name = methodDeclaration.getNameAsString();
+        this.name = StringUtils.capitalize(methodDeclaration.getNameAsString());
         this.annotations = new ArrayList<>();
         findAnnotations();
         this.returnType = methodDeclaration.getType();

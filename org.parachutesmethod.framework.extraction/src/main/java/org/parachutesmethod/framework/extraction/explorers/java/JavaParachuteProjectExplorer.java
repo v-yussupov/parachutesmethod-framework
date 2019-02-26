@@ -1,5 +1,24 @@
 package org.parachutesmethod.framework.extraction.explorers.java;
 
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.symbolsolver.JavaSymbolSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.parachutesmethod.framework.extraction.Constants;
+import org.parachutesmethod.framework.extraction.explorers.ProjectCodeExplorer;
+import org.parachutesmethod.framework.extraction.explorers.SupportedLanguage;
+import org.parachutesmethod.framework.extraction.explorers.java.model.JavaClass;
+import org.parachutesmethod.framework.extraction.explorers.java.model.JavaInterface;
+import org.parachutesmethod.framework.extraction.explorers.java.model.JavaMethod;
+import org.parachutesmethod.framework.extraction.explorers.java.model.JavaProjectFile;
+import org.parachutesmethod.framework.extraction.explorers.java.model.MavenProjectObjectModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -9,22 +28,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.ParserConfiguration;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.symbolsolver.JavaSymbolSolver;
-import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
-import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.parachutesmethod.framework.extraction.explorers.ProjectCodeExplorer;
-import org.parachutesmethod.framework.extraction.explorers.SupportedLanguage;
-import org.parachutesmethod.framework.extraction.explorers.java.model.JavaClass;
-import org.parachutesmethod.framework.extraction.explorers.java.model.JavaInterface;
-import org.parachutesmethod.framework.extraction.explorers.java.model.JavaMethod;
-import org.parachutesmethod.framework.extraction.explorers.java.model.JavaProjectFile;
-import org.parachutesmethod.framework.extraction.explorers.java.model.MavenPOMFile;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
     private static Logger LOGGER = LoggerFactory.getLogger(JavaParachuteProjectExplorer.class);
 
@@ -32,7 +35,7 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
     private List<JavaProjectFile> projectFiles = new ArrayList<>();
     private Set<JavaClass> projectClasses = new HashSet<>();
     private Set<JavaInterface> projectInterfaces = new HashSet<>();
-    private List<MavenPOMFile> pomFiles = new ArrayList<>();
+    private List<MavenProjectObjectModel> pomFiles = new ArrayList<>();
 
     public JavaParachuteProjectExplorer(Path projectPath) throws IOException {
         super(projectPath, SupportedLanguage.JAVA);
@@ -48,6 +51,7 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
         JavaParser.setStaticConfiguration(parserConfiguration);
 
         parseProjectFiles();
+        parseMavenPOMFiles();
     }
 
     private void parseProjectFiles() throws IOException {
@@ -70,18 +74,28 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
     }
 
     private void parseMavenPOMFiles() throws IOException {
-        for (Path path : findMavenPOMFiles()) {
-            try (FileInputStream in = new FileInputStream(path.toString())) {
-                LOGGER.info(String.format("Starting to parse project file %s", path.getFileName().toString()));
-            } catch (IOException e) {
-                LOGGER.error(e.getMessage());
-                e.printStackTrace();
-            }
-        }
+        findProjectFiles(Constants.EXTENSION_XML)
+                .stream()
+                .filter((filePath) -> filePath.getFileName().toString().equals(Constants.MAVEN_POM.concat(Constants.EXTENSION_XML)))
+                .collect(Collectors.toList())
+                .forEach(pomPath -> {
+                    try (FileInputStream in = new FileInputStream(pomPath.toString())) {
+                        LOGGER.info(String.format("Starting to parse Maven pom file located at", pomPath.getFileName().toString()));
+                        MavenXpp3Reader reader = new MavenXpp3Reader();
+                        pomFiles.add(new MavenProjectObjectModel(pomPath, reader.read(in)));
+                    } catch (IOException | XmlPullParserException e) {
+                        LOGGER.error(e.getMessage());
+                        e.printStackTrace();
+                    }
+                });
     }
 
     public List<JavaProjectFile> getProjectFiles() {
         return projectFiles;
+    }
+
+    public List<MavenProjectObjectModel> getPomFiles() {
+        return pomFiles;
     }
 
     public Set<JavaClass> getProjectClasses() {

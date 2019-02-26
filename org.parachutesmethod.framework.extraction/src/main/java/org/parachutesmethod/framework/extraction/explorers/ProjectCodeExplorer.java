@@ -1,14 +1,13 @@
 package org.parachutesmethod.framework.extraction.explorers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public abstract class ProjectCodeExplorer {
 
@@ -39,13 +38,6 @@ public abstract class ProjectCodeExplorer {
                 }
         );
         return projectFilePaths;
-    }
-
-    protected List<Path> findMavenPOMFiles() throws IOException {
-        return findProjectFiles(".xml")
-                .stream()
-                .filter((filePath) -> "pom".equals(filePath.getFileName().toString()))
-                .collect(Collectors.toList());
     }
 
     public Path getProjectPath() {

@@ -1,6 +1,9 @@
 package org.parachutesmethod.framework.extraction;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.kohsuke.github.GHRepository;
@@ -9,15 +12,23 @@ import org.parachutesmethod.framework.extraction.exceptions.NotSupportedLanguage
 import org.parachutesmethod.framework.extraction.exceptions.NotSupportedRepositoryTypeException;
 import org.parachutesmethod.framework.extraction.explorers.SupportedLanguage;
 import org.parachutesmethod.framework.extraction.explorers.java.JavaParachuteProjectExplorer;
+import org.parachutesmethod.framework.extraction.explorers.java.model.MavenProjectObjectModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 public class ParachuteExtractor<T> {
 
@@ -84,6 +95,7 @@ public class ParachuteExtractor<T> {
 
                 explorer.getParachuteMethods().forEach(parachuteMethod -> {
                     try {
+                        // Extract parachute code
                         ParachuteMethodDescriptor descriptor = new ParachuteMethodDescriptor(parachuteMethod);
                         String fileName = descriptor.getParachuteName().concat(SupportedLanguage.JAVA.getFileExtension());
                         Path dir = tempParachuteGenerationBundlesPath.resolve(descriptor.getParachuteName());
@@ -91,11 +103,27 @@ public class ParachuteExtractor<T> {
                         Files.createFile(dir.resolve(fileName));
                         writeContentToFile(dir.resolve(fileName).toFile(), descriptor.getPreparedParachute().toString());
 
+                        // Extract parachute meta-data
                         Path spec = dir.resolve(Constants.PARACHUTE_METADATA_FILE.concat(Constants.EXTENSION_JSON));
                         Files.createFile(spec);
-
                         ObjectMapper mapper = new ObjectMapper();
                         mapper.writerWithDefaultPrettyPrinter().writeValue(spec.toFile(), descriptor);
+
+                        // Extract maven dependencies
+                        Path pom = dir.resolve(Constants.MAVEN_POM.concat(Constants.EXTENSION_XML));
+                        Files.createFile(pom);
+                        try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pom.toFile()), StandardCharsets.UTF_8))) {
+                            Model model = new Model();
+                            model.setName("parachute-method." + descriptor.getParachuteName().toLowerCase());
+
+                            Set<Dependency> dependencies = new HashSet<>();
+                            for (MavenProjectObjectModel m : explorer.getPomFiles()) {
+                                dependencies.addAll(m.getDependencies());
+                            }
+                            dependencies.forEach(model::addDependency);
+                            new MavenXpp3Writer().write(writer, model);
+                        }
+
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
