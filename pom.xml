@@ -29,6 +29,7 @@
     <modules>
         <module>org.parachutesmethod.framework.rest</module>
         <module>org.parachutesmethod.framework.extraction</module>
+        <module>org.parachutesmethod.framework.generation</module>
     </modules>
 
     <dependencyManagement>
@@ -64,6 +65,17 @@
                 <groupId>org.slf4j</groupId>
                 <artifactId>slf4j-simple</artifactId>
                 <version>1.7.5</version>
+            </dependency>
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>4.11</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.freemarker</groupId>
+                <artifactId>freemarker</artifactId>
+                <version>2.3.28</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

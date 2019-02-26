@@ -16,6 +16,7 @@ import org.parachutesmethod.framework.extraction.Constants;
 public class JavaMethod {
 
     private JavaProjectFile parentFile;
+    private JavaClass parentClass;
     @JsonProperty
     private String name;
     @JsonProperty
@@ -26,12 +27,14 @@ public class JavaMethod {
     private MethodDeclaration methodDeclaration;
     private Type returnType;
     private List<Parameter> inputParameters;
+    private String resourcePath;
 
     public JavaMethod() {
     }
 
-    JavaMethod(JavaProjectFile parent, MethodDeclaration methodDeclaration) {
+    JavaMethod(JavaProjectFile parent, JavaClass parentClass, MethodDeclaration methodDeclaration) {
         this.parentFile = parent;
+        this.parentClass = parentClass;
         this.methodDeclaration = methodDeclaration;
         this.name = methodDeclaration.getNameAsString();
         this.annotations = new ArrayList<>();
@@ -66,6 +69,9 @@ public class JavaMethod {
         }
         if (methodDeclaration.getAnnotations().isNonEmpty()) {
             methodDeclaration.getAnnotations().forEach(a -> {
+                /*if (a.getNameAsString().equals(Constants.PATH_ANNOTATION)) {
+                    this.resourcePath = parentClass.getResourcePath().concat(a.asSingleMemberAnnotationExpr().getMemberValue().toString());
+                }*/
                 JavaAnnotation annotation = new JavaAnnotation(a);
                 isParachuteMethod = annotation.isParachuteAnnotation();
                 annotations.add(new JavaAnnotation(a));

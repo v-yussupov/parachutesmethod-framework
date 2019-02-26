@@ -15,7 +15,7 @@ public class JavaInterface extends AbstractDeclarationContainer<ClassOrInterface
         this.containingFile = containingFile;
         this.declaration = cd;
         if (!cd.getMethods().isEmpty()) {
-            cd.getMethods().forEach(md -> methods.add(new JavaMethod(containingFile, md)));
+            cd.getMethods().forEach(md -> methods.add(new JavaMethod(containingFile, null, md)));
         }
     }
 

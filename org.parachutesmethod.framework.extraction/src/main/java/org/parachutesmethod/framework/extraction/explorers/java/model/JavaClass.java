@@ -2,14 +2,18 @@ package org.parachutesmethod.framework.extraction.explorers.java.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.expr.NormalAnnotationExpr;
+import org.parachutesmethod.framework.extraction.Constants;
 
 public class JavaClass extends AbstractDeclarationContainer<ClassOrInterfaceDeclaration> {
     private List<JavaMethod> methods = new ArrayList<>();
     private List<JavaClass> innerClasses = new ArrayList<>();
     private boolean withParachutes;
+    private String resourcePath;
 
     JavaClass(JavaProjectFile containingFile, ClassOrInterfaceDeclaration cd) {
         this.containingFile = containingFile;
@@ -21,13 +25,16 @@ public class JavaClass extends AbstractDeclarationContainer<ClassOrInterfaceDecl
 
         if (!cd.getMethods().isEmpty()) {
             cd.getMethods().forEach(md -> {
-                JavaMethod method = new JavaMethod(containingFile, md);
+                JavaMethod method = new JavaMethod(containingFile, this, md);
                 withParachutes |= method.isParachuteMethod();
                 methods.add(method);
             });
         }
         if (!cd.getAnnotations().isEmpty()) {
             cd.getAnnotations().forEach(a -> {
+                if (a.getNameAsString().equals(Constants.PATH_ANNOTATION)) {
+                    resourcePath = a.asSingleMemberAnnotationExpr().getMemberValue().toString();
+                }
                 JavaAnnotation annotation = new JavaAnnotation(a);
                 annotations.add(annotation);
             });
@@ -58,6 +65,10 @@ public class JavaClass extends AbstractDeclarationContainer<ClassOrInterfaceDecl
         return withParachutes;
     }
 
+    public String getResourcePath() {
+        return resourcePath;
+    }
+
     public List<JavaClass> getInnerClasses() {
         return innerClasses;
     }
@@ -69,9 +80,12 @@ public class JavaClass extends AbstractDeclarationContainer<ClassOrInterfaceDecl
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Class: %s, Package: %s", name, containingFile.getPackageName()));
+        sb.append(String.format("Class: %s, Package: %s\n", name, containingFile.getPackageName()));
         sb.append(String.format("Methods_Count: %d\n", methods.size()));
-        sb.append(String.format("HasParachutes: %s", withParachutes));
+        sb.append(String.format("HasParachutes: %s\n", withParachutes));
+        if (Objects.nonNull(resourcePath)) {
+            sb.append(String.format("ResourcePath: %s", resourcePath));
+        }
         sb.append(System.lineSeparator());
         sb.append(String.format("Inner classes count: %d\n", innerClasses.size()));
         innerClasses.forEach(c -> {

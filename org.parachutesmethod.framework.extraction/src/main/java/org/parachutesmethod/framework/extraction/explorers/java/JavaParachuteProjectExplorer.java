@@ -21,6 +21,7 @@ import org.parachutesmethod.framework.extraction.explorers.java.model.JavaClass;
 import org.parachutesmethod.framework.extraction.explorers.java.model.JavaInterface;
 import org.parachutesmethod.framework.extraction.explorers.java.model.JavaMethod;
 import org.parachutesmethod.framework.extraction.explorers.java.model.JavaProjectFile;
+import org.parachutesmethod.framework.extraction.explorers.java.model.MavenPOMFile;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +32,7 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
     private List<JavaProjectFile> projectFiles = new ArrayList<>();
     private Set<JavaClass> projectClasses = new HashSet<>();
     private Set<JavaInterface> projectInterfaces = new HashSet<>();
+    private List<MavenPOMFile> pomFiles = new ArrayList<>();
 
     public JavaParachuteProjectExplorer(Path projectPath) throws IOException {
         super(projectPath, SupportedLanguage.JAVA);
@@ -45,10 +47,10 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
                 .setSymbolResolver(symbolSolver);
         JavaParser.setStaticConfiguration(parserConfiguration);
 
-        parseProject();
+        parseProjectFiles();
     }
 
-    private void parseProject() throws IOException {
+    private void parseProjectFiles() throws IOException {
         for (Path path : this.findProjectFiles()) {
             try (FileInputStream in = new FileInputStream(path.toString())) {
                 LOGGER.info(String.format("Starting to parse project file %s", path.getFileName().toString()));
@@ -60,6 +62,17 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
                 this.projectClasses.addAll(projectFile.getClasses());
                 this.projectInterfaces.addAll(projectFile.getInterfaces());
                 this.projectFiles.add(projectFile);
+            } catch (IOException e) {
+                LOGGER.error(e.getMessage());
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void parseMavenPOMFiles() throws IOException {
+        for (Path path : findMavenPOMFiles()) {
+            try (FileInputStream in = new FileInputStream(path.toString())) {
+                LOGGER.info(String.format("Starting to parse project file %s", path.getFileName().toString()));
             } catch (IOException e) {
                 LOGGER.error(e.getMessage());
                 e.printStackTrace();

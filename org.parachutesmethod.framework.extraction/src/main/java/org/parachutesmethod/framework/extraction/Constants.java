@@ -6,7 +6,7 @@ public class Constants {
     public static final String PARACHUTE_METADATA_FILE = "parachute-specification";
     public static final String EXTENSION_JSON = ".json";
     public static final String EXTENSION_YAML = ".yaml";
-
+    public static final String PATH_ANNOTATION = "Path";
 
 
     public static final String PARACHUTE_METHOD_ANNOTATION = "ParachuteMethod";
