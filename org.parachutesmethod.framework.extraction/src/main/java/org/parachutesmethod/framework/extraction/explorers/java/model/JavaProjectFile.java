@@ -84,11 +84,11 @@ public class JavaProjectFile {
         }
     }
 
-    Path getFilePath() {
+    public Path getFilePath() {
         return filePath;
     }
 
-    String getFileName() {
+    public String getFileName() {
         return filePath.getFileName().toString();
     }
 
@@ -96,7 +96,7 @@ public class JavaProjectFile {
         return parsedFile;
     }
 
-    String getPackageName() {
+    public String getPackageName() {
         return packageName;
     }
 

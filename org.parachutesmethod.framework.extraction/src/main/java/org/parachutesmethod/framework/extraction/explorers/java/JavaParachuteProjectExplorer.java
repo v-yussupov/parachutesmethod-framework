@@ -28,6 +28,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+;
+
 public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
     private static Logger LOGGER = LoggerFactory.getLogger(JavaParachuteProjectExplorer.class);
 
@@ -52,6 +54,7 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
 
         parseProjectFiles();
         parseMavenPOMFiles();
+        System.out.println("asd");
     }
 
     private void parseProjectFiles() throws IOException {

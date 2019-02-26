@@ -1,7 +1,5 @@
 package org.parachutesmethod.framework.extraction;
 
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.javaparser.ast.CompilationUnit;
@@ -10,9 +8,13 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import org.parachutesmethod.framework.extraction.explorers.java.model.JavaAnnotation;
+import org.parachutesmethod.framework.extraction.explorers.java.model.JavaImport;
 import org.parachutesmethod.framework.extraction.explorers.java.model.JavaMethod;
 
-@JsonIgnoreProperties( {"preparedParachute", "parachuteMethodData"})
+import java.util.List;
+import java.util.Objects;
+
+@JsonIgnoreProperties({"preparedParachute", "parachuteMethodData", "pojos"})
 public class ParachuteMethodDescriptor {
     private String parachuteName;
     private JavaMethod parachuteMethodData;
@@ -30,14 +32,15 @@ public class ParachuteMethodDescriptor {
                         )
                 );
 
-        setImports();
+        preparedParachute.setPackageDeclaration(Constants.EXTRACTED_PARACHUTE_PACKAGE_NAME);
+        setImports(preparedParachute, parachuteMethodData.getParentFile().getImports());
         constructClassWithParachute();
     }
 
-    private void setImports() {
+    private void setImports(CompilationUnit cu, List<JavaImport> javaImports) {
         NodeList<ImportDeclaration> imports = new NodeList<>();
-        parachuteMethodData.getParentFile().getImports().forEach(i -> imports.add(i.getImportDeclaration()));
-        preparedParachute.setImports(imports);
+        javaImports.forEach(i -> imports.add(i.getImportDeclaration()));
+        cu.setImports(imports);
     }
 
     private void constructClassWithParachute() {
@@ -66,7 +69,7 @@ public class ParachuteMethodDescriptor {
     String getParachuteName() {
         return parachuteName;
     }
-
+    
     CompilationUnit getPreparedParachute() {
         return preparedParachute;
     }

@@ -5,6 +5,7 @@ import org.apache.maven.model.Model;
 
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Properties;
 
 public class MavenProjectObjectModel {
     private Path location;
@@ -25,5 +26,9 @@ public class MavenProjectObjectModel {
 
     public List<Dependency> getDependencies() {
         return pom.getDependencies();
+    }
+
+    public Properties getProperties() {
+        return pom.getProperties();
     }
 }
