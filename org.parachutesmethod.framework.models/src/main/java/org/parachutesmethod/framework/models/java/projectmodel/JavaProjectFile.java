@@ -1,4 +1,4 @@
-package org.parachutesmethod.framework.extraction.explorers.java.model;
+package org.parachutesmethod.framework.models.java.projectmodel;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -6,14 +6,10 @@ import java.util.List;
 import java.util.Optional;
 
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.google.common.base.Strings;
-import org.parachutesmethod.framework.extraction.Constants;
-import org.parachutesmethod.framework.extraction.explorers.java.visitors.ClassOrInterfaceDeclarationCollector;
-import org.parachutesmethod.framework.extraction.explorers.java.visitors.ImportDeclarationCollector;
+import org.parachutesmethod.framework.models.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,25 +40,9 @@ public class JavaProjectFile {
             classOrInterfaceName = parsedFile.getPrimaryTypeName().toString();
             primaryTypeInterface = ((ClassOrInterfaceDeclaration) parsedFile.getPrimaryType().get()).isInterface();
         }
-        findJavaImports();
-        findJavaClassesAndInterfaces();
     }
 
-    private void findJavaImports() {
-        List<ImportDeclaration> importDeclarations = new ArrayList<>();
-        VoidVisitor<List<ImportDeclaration>> importDeclarationCollector = new ImportDeclarationCollector();
-        importDeclarationCollector.visit(parsedFile, importDeclarations);
-        if (!importDeclarations.isEmpty()) {
-            importDeclarations.forEach(
-                    importDeclaration -> imports.add(new JavaImport(importDeclaration))
-            );
-        }
-    }
-
-    private void findJavaClassesAndInterfaces() {
-        List<ClassOrInterfaceDeclaration> classDeclarations = new ArrayList<>();
-        VoidVisitor<List<ClassOrInterfaceDeclaration>> classDeclarationCollector = new ClassOrInterfaceDeclarationCollector();
-        classDeclarationCollector.visit(parsedFile, classDeclarations);
+    public void processJavaClassesAndInterfaces(List<ClassOrInterfaceDeclaration> classDeclarations) {
         if (!classDeclarations.isEmpty()) {
             classDeclarations.forEach(cd -> {
                 if (!cd.isInterface()) {
@@ -145,5 +125,21 @@ public class JavaProjectFile {
         sb.append(Strings.repeat("=", filePath.toString().length() + 10));
         sb.append(System.lineSeparator());
         return sb.toString();
+    }
+
+    public void setWithParachutes(boolean withParachutes) {
+        this.withParachutes = withParachutes;
+    }
+
+    public void setImports(List<JavaImport> imports) {
+        this.imports = imports;
+    }
+
+    public void setClasses(List<JavaClass> classes) {
+        this.classes = classes;
+    }
+
+    public void setInterfaces(List<JavaInterface> interfaces) {
+        this.interfaces = interfaces;
     }
 }

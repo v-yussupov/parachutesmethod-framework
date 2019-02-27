@@ -30,6 +30,7 @@
         <module>org.parachutesmethod.framework.rest</module>
         <module>org.parachutesmethod.framework.extraction</module>
         <module>org.parachutesmethod.framework.generation</module>
+        <module>org.parachutesmethod.framework.models</module>
     </modules>
 
     <dependencyManagement>

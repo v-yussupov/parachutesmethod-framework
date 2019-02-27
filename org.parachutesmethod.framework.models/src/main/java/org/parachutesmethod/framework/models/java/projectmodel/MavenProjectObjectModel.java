@@ -1,4 +1,4 @@
-package org.parachutesmethod.framework.extraction.explorers.java.model;
+package org.parachutesmethod.framework.models.java.projectmodel;
 
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;

@@ -1,24 +1,5 @@
 package org.parachutesmethod.framework.extraction.explorers.java;
 
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.ParserConfiguration;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.symbolsolver.JavaSymbolSolver;
-import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
-import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
-import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.parachutesmethod.framework.extraction.Constants;
-import org.parachutesmethod.framework.extraction.explorers.ProjectCodeExplorer;
-import org.parachutesmethod.framework.extraction.explorers.SupportedLanguage;
-import org.parachutesmethod.framework.extraction.explorers.java.model.JavaClass;
-import org.parachutesmethod.framework.extraction.explorers.java.model.JavaInterface;
-import org.parachutesmethod.framework.extraction.explorers.java.model.JavaMethod;
-import org.parachutesmethod.framework.extraction.explorers.java.model.JavaProjectFile;
-import org.parachutesmethod.framework.extraction.explorers.java.model.MavenProjectObjectModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -27,6 +8,31 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParserConfiguration;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.visitor.VoidVisitor;
+import com.github.javaparser.symbolsolver.JavaSymbolSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
+import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
+import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
+import org.parachutesmethod.framework.extraction.Constants;
+import org.parachutesmethod.framework.extraction.explorers.ProjectCodeExplorer;
+import org.parachutesmethod.framework.extraction.explorers.SupportedLanguage;
+import org.parachutesmethod.framework.extraction.explorers.java.visitors.ClassOrInterfaceDeclarationCollector;
+import org.parachutesmethod.framework.extraction.explorers.java.visitors.ImportDeclarationCollector;
+import org.parachutesmethod.framework.models.java.projectmodel.JavaClass;
+import org.parachutesmethod.framework.models.java.projectmodel.JavaImport;
+import org.parachutesmethod.framework.models.java.projectmodel.JavaInterface;
+import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
+import org.parachutesmethod.framework.models.java.projectmodel.JavaProjectFile;
+import org.parachutesmethod.framework.models.java.projectmodel.MavenProjectObjectModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 ;
 
@@ -54,7 +60,6 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
 
         parseProjectFiles();
         parseMavenPOMFiles();
-        System.out.println("asd");
     }
 
     private void parseProjectFiles() throws IOException {
@@ -64,6 +69,8 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
                 CompilationUnit parsedFile = JavaParser.parse(in);
 
                 JavaProjectFile projectFile = new JavaProjectFile(path, parsedFile);
+                projectFile.setImports(findJavaImports(parsedFile));
+                projectFile.processJavaClassesAndInterfaces(findJavaClassesAndInterfaces(parsedFile));
 
                 this.hasParachutes |= projectFile.isWithParachutes();
                 this.projectClasses.addAll(projectFile.getClasses());
@@ -91,6 +98,26 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
                         e.printStackTrace();
                     }
                 });
+    }
+
+    private List<JavaImport> findJavaImports(CompilationUnit parsedFile) {
+        List<ImportDeclaration> importDeclarations = new ArrayList<>();
+        List<JavaImport> imports = new ArrayList<>();
+        VoidVisitor<List<ImportDeclaration>> importDeclarationCollector = new ImportDeclarationCollector();
+        importDeclarationCollector.visit(parsedFile, importDeclarations);
+        if (!importDeclarations.isEmpty()) {
+            importDeclarations.forEach(
+                    importDeclaration -> imports.add(new JavaImport(importDeclaration))
+            );
+        }
+        return imports;
+    }
+
+    private List<ClassOrInterfaceDeclaration> findJavaClassesAndInterfaces(CompilationUnit parsedFile) {
+        List<ClassOrInterfaceDeclaration> classDeclarations = new ArrayList<>();
+        VoidVisitor<List<ClassOrInterfaceDeclaration>> classDeclarationCollector = new ClassOrInterfaceDeclarationCollector();
+        classDeclarationCollector.visit(parsedFile, classDeclarations);
+        return classDeclarations;
     }
 
     public List<JavaProjectFile> getProjectFiles() {

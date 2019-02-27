@@ -1,5 +1,8 @@
 package org.parachutesmethod.framework.extraction;
 
+import java.util.List;
+import java.util.Objects;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.javaparser.ast.CompilationUnit;
@@ -7,14 +10,11 @@ import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import org.parachutesmethod.framework.extraction.explorers.java.model.JavaAnnotation;
-import org.parachutesmethod.framework.extraction.explorers.java.model.JavaImport;
-import org.parachutesmethod.framework.extraction.explorers.java.model.JavaMethod;
+import org.parachutesmethod.framework.models.java.projectmodel.JavaAnnotation;
+import org.parachutesmethod.framework.models.java.projectmodel.JavaImport;
+import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
 
-import java.util.List;
-import java.util.Objects;
-
-@JsonIgnoreProperties({"preparedParachute", "parachuteMethodData", "pojos"})
+@JsonIgnoreProperties( {"preparedParachute", "parachuteMethodData", "pojos"})
 public class ParachuteMethodDescriptor {
     private String parachuteName;
     private JavaMethod parachuteMethodData;
@@ -69,7 +69,7 @@ public class ParachuteMethodDescriptor {
     String getParachuteName() {
         return parachuteName;
     }
-    
+
     CompilationUnit getPreparedParachute() {
         return preparedParachute;
     }

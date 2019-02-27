@@ -1,13 +1,13 @@
-package org.parachutesmethod.framework.extraction.explorers.java.model;
+package org.parachutesmethod.framework.models.java.projectmodel;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
-import org.parachutesmethod.framework.extraction.Constants;
-
-import java.util.HashMap;
-import java.util.Map;
+import org.parachutesmethod.framework.models.Constants;
 
 public class JavaAnnotation {
     private String name;

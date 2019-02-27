@@ -1,26 +1,5 @@
 package org.parachutesmethod.framework.extraction;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.ast.ImportDeclaration;
-import com.github.javaparser.ast.NodeList;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
-import org.eclipse.jgit.api.Git;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.kohsuke.github.GHRepository;
-import org.kohsuke.github.GitHub;
-import org.parachutesmethod.framework.extraction.exceptions.NotSupportedLanguageException;
-import org.parachutesmethod.framework.extraction.exceptions.NotSupportedRepositoryTypeException;
-import org.parachutesmethod.framework.extraction.explorers.SupportedLanguage;
-import org.parachutesmethod.framework.extraction.explorers.java.JavaParachuteProjectExplorer;
-import org.parachutesmethod.framework.extraction.explorers.java.model.JavaClass;
-import org.parachutesmethod.framework.extraction.explorers.java.model.JavaMethod;
-import org.parachutesmethod.framework.extraction.explorers.java.model.MavenProjectObjectModel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -36,6 +15,27 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.ImportDeclaration;
+import com.github.javaparser.ast.NodeList;
+import org.apache.maven.model.Dependency;
+import org.apache.maven.model.Model;
+import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.kohsuke.github.GHRepository;
+import org.kohsuke.github.GitHub;
+import org.parachutesmethod.framework.extraction.exceptions.NotSupportedLanguageException;
+import org.parachutesmethod.framework.extraction.exceptions.NotSupportedRepositoryTypeException;
+import org.parachutesmethod.framework.extraction.explorers.SupportedLanguage;
+import org.parachutesmethod.framework.extraction.explorers.java.JavaParachuteProjectExplorer;
+import org.parachutesmethod.framework.models.java.projectmodel.JavaClass;
+import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
+import org.parachutesmethod.framework.models.java.projectmodel.MavenProjectObjectModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ParachuteExtractor<T> {
 
@@ -160,12 +160,10 @@ public class ParachuteExtractor<T> {
 
                             new MavenXpp3Writer().write(writer, model);
                         }
-
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
                 });
-
             }
         }
     }
@@ -206,5 +204,4 @@ public class ParachuteExtractor<T> {
             writer.write(content);
         }
     }
-
 }

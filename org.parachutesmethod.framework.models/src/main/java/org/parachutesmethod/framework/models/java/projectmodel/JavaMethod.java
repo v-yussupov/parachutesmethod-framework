@@ -1,4 +1,8 @@
-package org.parachutesmethod.framework.extraction.explorers.java.model;
+package org.parachutesmethod.framework.models.java.projectmodel;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -8,11 +12,7 @@ import com.github.javaparser.ast.type.Type;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.parachutesmethod.framework.extraction.Constants;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import org.parachutesmethod.framework.models.Constants;
 
 public class JavaMethod {
 

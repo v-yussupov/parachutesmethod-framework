@@ -1,4 +1,4 @@
-package org.parachutesmethod.framework.extraction.explorers.java.model;
+package org.parachutesmethod.framework.models.java.projectmodel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,8 +6,7 @@ import java.util.Objects;
 
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
-import com.github.javaparser.ast.expr.NormalAnnotationExpr;
-import org.parachutesmethod.framework.extraction.Constants;
+import org.parachutesmethod.framework.models.Constants;
 
 public class JavaClass extends AbstractDeclarationContainer<ClassOrInterfaceDeclaration> {
     private List<JavaMethod> methods = new ArrayList<>();
@@ -15,7 +14,7 @@ public class JavaClass extends AbstractDeclarationContainer<ClassOrInterfaceDecl
     private boolean withParachutes;
     private String resourcePath;
 
-    JavaClass(JavaProjectFile containingFile, ClassOrInterfaceDeclaration cd) {
+    public JavaClass(JavaProjectFile containingFile, ClassOrInterfaceDeclaration cd) {
         this.containingFile = containingFile;
         this.name = cd.getNameAsString();
         this.declaration = cd;

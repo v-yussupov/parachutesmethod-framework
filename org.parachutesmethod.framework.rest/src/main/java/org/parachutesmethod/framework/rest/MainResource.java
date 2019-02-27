@@ -1,5 +1,17 @@
 package org.parachutesmethod.framework.rest;
 
+import java.io.IOException;
+import java.net.URL;
+
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -7,15 +19,8 @@ import org.eclipse.jgit.api.errors.GitAPIException;
 import org.parachutesmethod.framework.extraction.ParachuteExtractor;
 import org.parachutesmethod.framework.extraction.exceptions.NotSupportedLanguageException;
 import org.parachutesmethod.framework.extraction.exceptions.NotSupportedRepositoryTypeException;
-import org.parachutesmethod.framework.extraction.explorers.SupportedLanguage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.net.URL;
 
 @Path("/")
 @Api(value = "mainresource", description = "Sample description")
