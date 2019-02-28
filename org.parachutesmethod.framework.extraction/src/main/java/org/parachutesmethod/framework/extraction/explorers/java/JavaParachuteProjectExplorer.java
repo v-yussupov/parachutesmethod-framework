@@ -1,14 +1,5 @@
 package org.parachutesmethod.framework.extraction.explorers.java;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
@@ -33,6 +24,15 @@ import org.parachutesmethod.framework.models.java.projectmodel.JavaProjectFile;
 import org.parachutesmethod.framework.models.java.projectmodel.MavenProjectObjectModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 ;
 
@@ -130,6 +130,15 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
 
     public Set<JavaClass> getProjectClasses() {
         return projectClasses;
+    }
+
+    public JavaClass getProjectClassByName(String name) {
+        for (JavaClass c : projectClasses) {
+            if (c.getName().equals(name)) {
+                return c;
+            }
+        }
+        return null;
     }
 
     public Set<JavaMethod> getParachuteMethods() {

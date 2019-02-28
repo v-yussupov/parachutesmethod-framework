@@ -1,10 +1,5 @@
 package org.parachutesmethod.framework.models.java.projectmodel;
 
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -13,14 +8,18 @@ import org.parachutesmethod.framework.models.Constants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 public class JavaProjectFile {
     private static Logger LOGGER = LoggerFactory.getLogger(JavaProjectFile.class);
 
     private Path filePath;
     private CompilationUnit parsedFile;
     private String packageName;
-    private String classOrInterfaceName;
-    private boolean primaryTypeInterface;
+    private String primaryClassOrInterfaceName;
     private List<JavaImport> imports = new ArrayList<>();
     private List<JavaClass> classes = new ArrayList<>();
     private List<JavaInterface> interfaces = new ArrayList<>();
@@ -36,10 +35,7 @@ public class JavaProjectFile {
             packageName = Constants.FILE_WITHOUT_PACKAGE;
         }
 
-        if (parsedFile.getPrimaryType().isPresent()) {
-            classOrInterfaceName = parsedFile.getPrimaryTypeName().toString();
-            primaryTypeInterface = ((ClassOrInterfaceDeclaration) parsedFile.getPrimaryType().get()).isInterface();
-        }
+        primaryClassOrInterfaceName = filePath.getFileName().toString().replace(Constants.EXTENSION_JAVA, "");
     }
 
     public void processJavaClassesAndInterfaces(List<ClassOrInterfaceDeclaration> classDeclarations) {
@@ -80,12 +76,8 @@ public class JavaProjectFile {
         return packageName;
     }
 
-    public String getClassOrInterfaceName() {
-        return classOrInterfaceName;
-    }
-
-    public boolean isPrimaryTypeInterface() {
-        return primaryTypeInterface;
+    public String getPrimaryClassOrInterfaceName() {
+        return primaryClassOrInterfaceName;
     }
 
     public List<JavaMethod> getFileMethods() {
@@ -98,8 +90,16 @@ public class JavaProjectFile {
         return classes;
     }
 
+    public void setClasses(List<JavaClass> classes) {
+        this.classes = classes;
+    }
+
     public List<JavaInterface> getInterfaces() {
         return interfaces;
+    }
+
+    public void setInterfaces(List<JavaInterface> interfaces) {
+        this.interfaces = interfaces;
     }
 
     public Optional<JavaClass> getClassByName(String name) {
@@ -110,8 +110,16 @@ public class JavaProjectFile {
         return imports;
     }
 
+    public void setImports(List<JavaImport> imports) {
+        this.imports = imports;
+    }
+
     public boolean isWithParachutes() {
         return withParachutes;
+    }
+
+    public void setWithParachutes(boolean withParachutes) {
+        this.withParachutes = withParachutes;
     }
 
     @Override
@@ -125,21 +133,5 @@ public class JavaProjectFile {
         sb.append(Strings.repeat("=", filePath.toString().length() + 10));
         sb.append(System.lineSeparator());
         return sb.toString();
-    }
-
-    public void setWithParachutes(boolean withParachutes) {
-        this.withParachutes = withParachutes;
-    }
-
-    public void setImports(List<JavaImport> imports) {
-        this.imports = imports;
-    }
-
-    public void setClasses(List<JavaClass> classes) {
-        this.classes = classes;
-    }
-
-    public void setInterfaces(List<JavaInterface> interfaces) {
-        this.interfaces = interfaces;
     }
 }

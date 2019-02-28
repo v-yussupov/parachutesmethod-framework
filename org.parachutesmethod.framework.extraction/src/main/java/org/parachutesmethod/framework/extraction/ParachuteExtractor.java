@@ -1,21 +1,5 @@
 package org.parachutesmethod.framework.extraction;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
@@ -36,6 +20,22 @@ import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
 import org.parachutesmethod.framework.models.java.projectmodel.MavenProjectObjectModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
 public class ParachuteExtractor<T> {
 
@@ -90,7 +90,7 @@ public class ParachuteExtractor<T> {
         }
     }
 
-    private void parseProject() throws IOException {
+    private Path parseProject() throws IOException {
         LOGGER.info("Starting to parse the project directory");
         if (Objects.nonNull(lang) && SupportedLanguage.JAVA.equals(lang)) {
             JavaParachuteProjectExplorer explorer = new JavaParachuteProjectExplorer(this.tempClonedProjectPath);
@@ -102,34 +102,54 @@ public class ParachuteExtractor<T> {
 
                 explorer.getParachuteMethods().forEach(parachuteMethod -> {
                     try {
-                        List<JavaClass> pojos = findClassesForExtraction(explorer.getProjectClasses(), parachuteMethod);
+                        List<JavaClass> dependencyClasses = findClassesForExtraction(explorer.getProjectClasses(), parachuteMethod);
 
-                        // Extract parachute code
+                        // prepare directories
                         ParachuteMethodDescriptor descriptor = new ParachuteMethodDescriptor(parachuteMethod);
                         String fileName = descriptor.getParachuteName().concat(SupportedLanguage.JAVA.getFileExtension());
                         Path dir = tempParachuteGenerationBundlesPath.resolve(descriptor.getParachuteName());
                         Files.createDirectories(dir);
                         Files.createFile(dir.resolve(fileName));
-                        writeContentToFile(dir.resolve(fileName).toFile(), descriptor.getPreparedParachute().toString());
 
-                        pojos.forEach(pojo -> {
-                            String pojoName = pojo.getName().concat(SupportedLanguage.JAVA.getFileExtension());
+                        List<JavaClass> staticClasses = new ArrayList<>();
+
+                        dependencyClasses.forEach(depClass -> {
+                            String pojoName = depClass.getName().concat(SupportedLanguage.JAVA.getFileExtension());
                             try {
-                                Files.createFile(dir.resolve(pojoName));
+                                if (!depClass.getClassDeclaration().isStatic()) {
+                                    Files.createFile(dir.resolve(pojoName));
 
-                                CompilationUnit cu = new CompilationUnit();
-                                cu.setPackageDeclaration(Constants.EXTRACTED_PARACHUTE_PACKAGE_NAME);
+                                    CompilationUnit cu = new CompilationUnit();
+                                    cu.setPackageDeclaration(Constants.EXTRACTED_PARACHUTE_PACKAGE_NAME);
 
-                                NodeList<ImportDeclaration> imports = new NodeList<>();
-                                pojo.getContainingFile().getImports().forEach(i -> imports.add(i.getImportDeclaration()));
-                                cu.setImports(imports);
-                                cu.addType(pojo.getClassDeclaration());
+                                    NodeList<ImportDeclaration> imports = new NodeList<>();
+                                    depClass.getContainingFile().getImports().forEach(i -> imports.add(i.getImportDeclaration()));
+                                    cu.setImports(imports);
+                                    cu.addType(depClass.getClassDeclaration());
 
-                                writeContentToFile(dir.resolve(pojoName).toFile(), cu.toString());
+                                    writeContentToFile(dir.resolve(pojoName).toFile(), cu.toString());
+                                } else {
+                                    staticClasses.add(depClass);
+                                }
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
                         });
+
+                        // Extract parachute code
+                        if (staticClasses.isEmpty()) {
+                            writeContentToFile(dir.resolve(fileName).toFile(), descriptor.getPreparedParachute().toString());
+                        } else {
+                            staticClasses.forEach(sc -> {
+                                CompilationUnit cu = descriptor.getPreparedParachute();
+                                cu.getType(0).getMembers().add(sc.getClassDeclaration());
+                                try {
+                                    writeContentToFile(dir.resolve(fileName).toFile(), cu.toString());
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            });
+                        }
 
                         // Extract parachute meta-data
                         Path spec = dir.resolve(Constants.PARACHUTE_METADATA_FILE.concat(Constants.EXTENSION_JSON));
@@ -164,13 +184,16 @@ public class ParachuteExtractor<T> {
                         e.printStackTrace();
                     }
                 });
+
+                return tempParachuteGenerationBundlesPath;
             }
         }
+        return null;
     }
 
-    public void extractParachutes() throws GitAPIException, NotSupportedRepositoryTypeException, IOException {
+    public Path extractParachutes() throws GitAPIException, NotSupportedRepositoryTypeException, IOException {
         cloneRepository();
-        parseProject();
+        return parseProject();
     }
 
     public List<JavaClass> findClassesForExtraction(Set<JavaClass> projectClasses, JavaMethod parachuteMethod) {
@@ -187,6 +210,12 @@ public class ParachuteExtractor<T> {
                 }
             });
         }
+
+        projectClasses.forEach(c -> {
+            if (parachuteMethod.getMethodDeclaration().toString().contains(c.getName())) {
+                result.add(c);
+            }
+        });
 
         return result;
     }

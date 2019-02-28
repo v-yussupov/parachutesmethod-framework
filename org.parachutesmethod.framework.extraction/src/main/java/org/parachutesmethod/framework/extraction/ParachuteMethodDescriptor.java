@@ -44,7 +44,7 @@ public class ParachuteMethodDescriptor {
     }
 
     private void constructClassWithParachute() {
-        ClassOrInterfaceDeclaration classDeclaration = preparedParachute.addClass(parachuteMethodData.getParentDeclarationName());
+        ClassOrInterfaceDeclaration classDeclaration = preparedParachute.addClass(parachuteName);
 
         MethodDeclaration md = parachuteMethodData.getMethodDeclaration();
         if (Objects.nonNull(parachuteAnnotations) && parachuteAnnotations.isRetainParachuteAnnotations()) {
