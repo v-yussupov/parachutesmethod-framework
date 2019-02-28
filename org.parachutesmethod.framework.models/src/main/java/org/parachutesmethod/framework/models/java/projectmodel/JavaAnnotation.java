@@ -62,4 +62,8 @@ public class JavaAnnotation {
     public boolean isParachuteAnnotation() {
         return isParachuteAnnotation;
     }
+
+    public boolean isPathAnnotation() {
+        return this.getName().equals(Constants.PATH_ANNOTATION);
+    }
 }

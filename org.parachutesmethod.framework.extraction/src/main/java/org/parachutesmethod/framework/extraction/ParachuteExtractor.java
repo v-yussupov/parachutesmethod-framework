@@ -1,5 +1,21 @@
 package org.parachutesmethod.framework.extraction;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
@@ -20,22 +36,6 @@ import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
 import org.parachutesmethod.framework.models.java.projectmodel.MavenProjectObjectModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 
 public class ParachuteExtractor<T> {
 
@@ -117,7 +117,7 @@ public class ParachuteExtractor<T> {
                             String pojoName = depClass.getName().concat(SupportedLanguage.JAVA.getFileExtension());
                             try {
                                 if (!depClass.getClassDeclaration().isStatic()) {
-                                    Files.createFile(dir.resolve(pojoName));
+                                    //Files.createFile(dir.resolve(pojoName));
 
                                     CompilationUnit cu = new CompilationUnit();
                                     cu.setPackageDeclaration(Constants.EXTRACTED_PARACHUTE_PACKAGE_NAME);

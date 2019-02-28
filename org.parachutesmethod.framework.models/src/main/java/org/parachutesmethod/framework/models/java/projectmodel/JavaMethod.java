@@ -1,7 +1,9 @@
 package org.parachutesmethod.framework.models.java.projectmodel;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -40,6 +42,16 @@ public class JavaMethod {
         this.name = StringUtils.capitalize(methodDeclaration.getNameAsString());
         this.annotations = new ArrayList<>();
         findAnnotations();
+
+        if (!annotations.isEmpty()) {
+            annotations.forEach(a -> {
+                if (a.isPathAnnotation()) {
+                    String path = a.getAnnotationExpression().asSingleMemberAnnotationExpr().getMemberValue().toString().replace("\"", "");
+                    resourcePath = findResourcePath(parentClass, path);
+                }
+            });
+        }
+
         this.returnType = methodDeclaration.getType();
         this.inputParameters = methodDeclaration.getParameters();
 
@@ -47,6 +59,31 @@ public class JavaMethod {
             ClassOrInterfaceDeclaration cd = (ClassOrInterfaceDeclaration) methodDeclaration.getParentNode().get();
             parentDeclarationName = cd.getNameAsString();
             classAsParentDeclaration = !cd.isInterface();
+        }
+    }
+
+    private String findResourcePath(JavaClass parentClass, String currentPath) {
+        if (Objects.isNull(parentClass)) {
+            return currentPath;
+        }
+        Optional<JavaAnnotation> parentPathAnnotation = parentClass.getAnnotations().stream().filter(JavaAnnotation::isPathAnnotation).findFirst();
+        if (parentPathAnnotation.isPresent()) {
+            String parentResPath = parentPathAnnotation.get().getAnnotationExpression().asSingleMemberAnnotationExpr().getMemberValue().toString().replace("\"", "");
+            if (!parentResPath.isEmpty() && !"/".equals(parentResPath)) {
+                URI left = URI.create(parentResPath).normalize();
+                URI right = URI.create(currentPath).normalize();
+                currentPath = left.relativize(right).toString();
+            } else {
+                if (!currentPath.startsWith("/")) {
+                    currentPath = parentResPath + currentPath;
+                }
+            }
+        }
+
+        if (parentClass.getParent() instanceof ClassOrInterfaceDeclaration) {
+            return findResourcePath(new JavaClass(parentFile, (ClassOrInterfaceDeclaration) parentClass.getParent()), currentPath);
+        } else {
+            return findResourcePath(null, currentPath);
         }
     }
 
@@ -138,8 +175,13 @@ public class JavaMethod {
         sb.append(String.format("Method: %s, Annotations_Count: %d, hasParachuteAnnotation: %s\n", name, annotations.size(), isParachuteMethod));
         sb.append(String.format("Parent ClassOrInterface Name: %s\n", parentDeclarationName));
         sb.append(String.format("Parent Declaration is a Class: %s\n", classAsParentDeclaration));
+        sb.append(String.format("Resource Path: %s\n", resourcePath));
         sb.append(System.lineSeparator());
         sb.append(String.format("Method body: \n%s\n", methodDeclaration));
         return sb.toString();
+    }
+
+    public JavaClass getParentClass() {
+        return parentClass;
     }
 }

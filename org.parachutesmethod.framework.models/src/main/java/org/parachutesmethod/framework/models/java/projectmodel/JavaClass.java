@@ -18,8 +18,19 @@ public class JavaClass extends AbstractDeclarationContainer<ClassOrInterfaceDecl
         this.containingFile = containingFile;
         this.name = cd.getNameAsString();
         this.declaration = cd;
+
         if (cd.isNestedType() && cd.getParentNode().isPresent()) {
             this.parent = (TypeDeclaration) cd.getParentNode().get();
+        }
+
+        if (!cd.getAnnotations().isEmpty()) {
+            cd.getAnnotations().forEach(a -> {
+                if (a.getNameAsString().equals(Constants.PATH_ANNOTATION)) {
+                    resourcePath = a.asSingleMemberAnnotationExpr().getMemberValue().toString().replace("\"", "");
+                }
+                JavaAnnotation annotation = new JavaAnnotation(a);
+                annotations.add(annotation);
+            });
         }
 
         if (!cd.getMethods().isEmpty()) {
@@ -27,15 +38,6 @@ public class JavaClass extends AbstractDeclarationContainer<ClassOrInterfaceDecl
                 JavaMethod method = new JavaMethod(containingFile, this, md);
                 withParachutes |= method.isParachuteMethod();
                 methods.add(method);
-            });
-        }
-        if (!cd.getAnnotations().isEmpty()) {
-            cd.getAnnotations().forEach(a -> {
-                if (a.getNameAsString().equals(Constants.PATH_ANNOTATION)) {
-                    resourcePath = a.asSingleMemberAnnotationExpr().getMemberValue().toString();
-                }
-                JavaAnnotation annotation = new JavaAnnotation(a);
-                annotations.add(annotation);
             });
         }
     }
