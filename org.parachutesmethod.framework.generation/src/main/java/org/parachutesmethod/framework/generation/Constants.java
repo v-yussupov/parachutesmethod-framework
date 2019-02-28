@@ -17,4 +17,10 @@ public class Constants {
     public static final String SHADE_MAVEN_PLUGIN_EXECUTION_PHASE = "package";
     public static final String SHADE_MAVEN_PLUGIN_EXECUTION_GOAL = "shade";
 
+    public static final String TEMPLATES_FOLDER = "templates";
+
+    public static final String TEMPLATES_TYPE_ROUTER_CONF = "routerConf";
+    public static final String TEMPLATE_ROUTER_CONF_AWS = "aws-nginx.ftl";
+
+    public static final String NGINX_ROUTER_DEFAULT_CONF = "default";
 }
