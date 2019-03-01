@@ -10,7 +10,6 @@ import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import org.parachutesmethod.framework.models.java.projectmodel.JavaAnnotation;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaImport;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
 
@@ -19,7 +18,8 @@ public class ParachuteMethodDescriptor {
     private String parachuteName;
     private JavaMethod parachuteMethodData;
     private CompilationUnit preparedParachute;
-    private ParachuteMethodAnnotationDescriptor parachuteAnnotations;
+    private ParachuteMethodAnnotationsDescriptor parachuteAnnotations;
+    private int retainedAnnotationsCount = 0;
 
     ParachuteMethodDescriptor(JavaMethod parachute) {
         parachuteName = parachute.getName();
@@ -27,7 +27,7 @@ public class ParachuteMethodDescriptor {
         parachuteMethodData = parachute;
         parachute.getParachuteAnnotation()
                 .ifPresent(javaAnnotation ->
-                        parachuteAnnotations = new ParachuteMethodAnnotationDescriptor(
+                        parachuteAnnotations = new ParachuteMethodAnnotationsDescriptor(
                                 javaAnnotation.getParameters()
                         )
                 );
@@ -47,22 +47,25 @@ public class ParachuteMethodDescriptor {
         ClassOrInterfaceDeclaration classDeclaration = preparedParachute.addClass(parachuteName);
 
         MethodDeclaration md = parachuteMethodData.getMethodDeclaration();
-        if (Objects.nonNull(parachuteAnnotations) && parachuteAnnotations.isRetainParachuteAnnotations()) {
-            parachuteMethodData.getAnnotations()
-                    .stream()
-                    .filter(JavaAnnotation::isParachuteAnnotation)
-                    .forEach(a -> md.addAnnotation(a.getAnnotationExpression()));
-        } else if (Objects.nonNull(parachuteAnnotations) && parachuteAnnotations.isRetainAnnotations()) {
-            parachuteMethodData.getAnnotations()
-                    .stream()
-                    .filter(a -> !a.isParachuteAnnotation())
-                    .forEach(a -> md.addAnnotation(a.getAnnotationExpression()));
-        } else {
+        if (Objects.nonNull(parachuteAnnotations)) {
+
+            parachuteMethodData.getAnnotations().forEach(a -> {
+                if (parachuteAnnotations.isParachuteAnnotationRetained()) {
+                    if (a.isParachuteAnnotation()) {
+                        md.addAnnotation(a.getAnnotationExpression());
+                        retainedAnnotationsCount++;
+                    }
+                } else if (parachuteAnnotations.isOtherAnnotationRetained()) {
+                    md.addAnnotation(a.getAnnotationExpression());
+                    retainedAnnotationsCount++;
+                }
+            });
+        }
+        if (retainedAnnotationsCount == 0) {
             md.setAnnotations(new NodeList<>());
         }
-        classDeclaration.getMembers().add(md);
 
-        //parachuteMethodData.getInputParameters()
+        classDeclaration.getMembers().add(md);
     }
 
     @JsonProperty
@@ -74,7 +77,7 @@ public class ParachuteMethodDescriptor {
         return preparedParachute;
     }
 
-    public ParachuteMethodAnnotationDescriptor getParachuteAnnotations() {
+    public ParachuteMethodAnnotationsDescriptor getParachuteAnnotations() {
         return parachuteAnnotations;
     }
 }

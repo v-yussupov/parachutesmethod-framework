@@ -14,6 +14,7 @@ public class Constants {
 
     public static final String CONF_ROUTING_OVERPROVISIONING = "overProvisioningFactor";
     public static final String CONF_ROUTING_DATE = "rerouteOnDay";
+    public static final String CONF_ROUTING_BACKUP_ROUTE = "backupRoute";
     public static final String CONF_KEEP_PARACHUTE_ANNOTATIONS = "retainParachuteAnnotations";
     public static final String CONF_KEEP_OTHER_ANNOTATIONS = "retainAnnotations";
 
