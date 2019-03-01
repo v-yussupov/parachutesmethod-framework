@@ -107,9 +107,6 @@ public class JavaMethod {
         }
         if (methodDeclaration.getAnnotations().isNonEmpty()) {
             methodDeclaration.getAnnotations().forEach(a -> {
-                /*if (a.getNameAsString().equals(Constants.PATH_ANNOTATION)) {
-                    this.resourcePath = parentClass.getResourcePath().concat(a.asSingleMemberAnnotationExpr().getMemberValue().toString());
-                }*/
                 JavaAnnotation annotation = new JavaAnnotation(a);
                 isParachuteMethod = annotation.isParachuteAnnotation();
                 annotations.add(new JavaAnnotation(a));
