@@ -12,7 +12,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import com.github.javaparser.ast.CompilationUnit;
 import org.apache.maven.model.Build;
@@ -36,6 +38,8 @@ public class AWSGenerator {
     public static void generate(Path path, List<JavaParachuteProjectExplorer> parachuteProjectExplorers) throws IOException {
         Path bundlesDir = path.getParent().resolve(Constants.DEPLOYMENT_BUNDLES_FOLDER);
         Files.createDirectories(bundlesDir);
+        Map<String, String> resourcePaths = new HashMap<>();
+
         parachuteProjectExplorers.forEach(e -> {
             try {
                 String parachuteName = e.getProjectPath().getFileName().toString();
@@ -49,6 +53,13 @@ public class AWSGenerator {
                 Files.createFile(parachuteFile);
                 e.getProjectFiles().forEach(f -> {
                     if (parachuteName.equals(f.getFileName().replace(".java", ""))) {
+
+                        f.getFileMethods().forEach(javaMethod -> {
+                            if (javaMethod.getName().equalsIgnoreCase(parachuteName)) {
+                                resourcePaths.put(parachuteName, javaMethod.getResourcePath());
+                            }
+                        });
+
                         CompilationUnit cu = f.getParsedFile();
                         cu.addImport(Constants.AWS_IMPORT_CONTEXT_OBJECT);
                         cu.addImport(Constants.AWS_IMPORT_LAMBDA_LOGGER);
@@ -125,5 +136,22 @@ public class AWSGenerator {
                 e1.printStackTrace();
             }
         });
+
+        Path parachuteDir = bundlesDir.resolve("router-configurations");
+        Files.createDirectory(parachuteDir);
+        Map<String, String> routerConfigurations = null;
+        try {
+            routerConfigurations = NginxRouterGenerator.generateNginxRouterConfigurationFiles(parachuteDir.toString(), resourcePaths);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Path cloudFormationTemplatesDir = bundlesDir.resolve("deployment-models");
+        Files.createDirectory(cloudFormationTemplatesDir);
+        try {
+            CloudFormationGenerator.generateCloudFormationTemplate(cloudFormationTemplatesDir.toString(), routerConfigurations);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

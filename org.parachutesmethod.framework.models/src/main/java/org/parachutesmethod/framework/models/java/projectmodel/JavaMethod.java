@@ -142,6 +142,10 @@ public class JavaMethod {
         return classAsParentDeclaration;
     }
 
+    public String getResourcePath() {
+        return resourcePath;
+    }
+
     @Override
     public int hashCode() {
         return new HashCodeBuilder(13, 31). // two randomly chosen prime numbers
