@@ -1,24 +1,24 @@
 http {
 <#if default??>
     upstream default {
-        server [Endpoint of original application];
+        server [Endpoint of original application and port, e.g., 192.168.0.1:9090];
     }
 <#else>
     upstream ${parachuteName} {
-        server [Endpoint of original application];
+        server [Endpoint of original application and port, e.g., 192.168.0.1:9090];
         server [Endpoint of function @ AWS Lambda] backup;
     }
 </#if>
 
     server {
+        listen 80;
+
+        location ${uri} {
 <#if default??>
-        location ${uri} {
             proxy_pass http://default;
-        }
 <#else>
-        location ${uri} {
             proxy_pass http://${parachuteName};
-        }
 </#if>
+        }
     }
 }
