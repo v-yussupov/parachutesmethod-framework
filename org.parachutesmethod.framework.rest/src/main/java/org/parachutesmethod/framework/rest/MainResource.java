@@ -55,9 +55,11 @@ public class MainResource {
     @Path("generate")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response generateParachute(@ApiParam(name = "path", required = true) @FormParam("path") String path) {
+    public Response generateParachute(@ApiParam(name = "path", required = true) @FormParam("path") String path,
+                                      @ApiParam(name = "lang", required = true) @FormParam("lang") String lang,
+                                      @ApiParam(name = "provider", required = true) @FormParam("provider") String provider) {
         try {
-            ParachuteGenerator gen = new ParachuteGenerator(path);
+            ParachuteGenerator gen = new ParachuteGenerator(path, lang, provider);
             gen.parseParachuteProject();
             gen.generateParachuteBundles();
 
