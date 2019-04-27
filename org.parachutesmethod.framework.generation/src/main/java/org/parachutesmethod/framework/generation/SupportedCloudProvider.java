@@ -3,7 +3,7 @@ package org.parachutesmethod.framework.generation;
 import java.util.Collections;
 import java.util.List;
 
-import org.parachutesmethod.framework.extraction.explorers.SupportedLanguage;
+import org.parachutesmethod.framework.extraction.languages.SupportedLanguage;
 
 public enum SupportedCloudProvider {
     AWS("aws", Collections.singletonList(SupportedLanguage.JAVA)),

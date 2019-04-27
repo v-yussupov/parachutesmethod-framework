@@ -4,7 +4,8 @@ import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.google.common.base.Strings;
-import org.parachutesmethod.framework.models.Constants;
+import org.parachutesmethod.framework.common.FileExtension;
+import org.parachutesmethod.framework.models.java.JavaConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,10 +33,10 @@ public class JavaProjectFile {
         if (parsedFile.getPackageDeclaration().isPresent()) {
             packageName = parsedFile.getPackageDeclaration().get().getNameAsString();
         } else {
-            packageName = Constants.FILE_WITHOUT_PACKAGE;
+            packageName = JavaConfiguration.FILE_WITHOUT_PACKAGE.value();
         }
 
-        primaryClassOrInterfaceName = filePath.getFileName().toString().replace(Constants.EXTENSION_JAVA, "");
+        primaryClassOrInterfaceName = filePath.getFileName().toString().replace(FileExtension.JAVA.extension(), "");
     }
 
     public void processJavaClassesAndInterfaces(List<ClassOrInterfaceDeclaration> classDeclarations) {

@@ -9,8 +9,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.parachutesmethod.framework.extraction.explorers.SupportedLanguage;
-import org.parachutesmethod.framework.extraction.explorers.java.JavaParachuteProjectExplorer;
+import org.parachutesmethod.framework.extraction.languages.SupportedLanguage;
+import org.parachutesmethod.framework.extraction.languages.java.JavaProjectExplorer;
 import org.parachutesmethod.framework.generation.generators.faas.aws.AWSGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,7 +21,7 @@ public class ParachuteGenerator {
     private Path path;
     private String projectLanguage;
     private SupportedCloudProvider provider;
-    private List<JavaParachuteProjectExplorer> parachuteProjectExplorers = new ArrayList<>();
+    private List<JavaProjectExplorer> parachuteProjectExplorers = new ArrayList<>();
 
     public ParachuteGenerator(String path, String projectLanguage, String provider) {
         this.path = Paths.get(path);
@@ -42,7 +42,7 @@ public class ParachuteGenerator {
                 parachuteProjectFolders.forEach(parachuteProjectFolder -> {
                     try {
                         LOGGER.info("Parsing parachute project name: " + parachuteProjectFolder.getFileName().toString());
-                        JavaParachuteProjectExplorer explorer = new JavaParachuteProjectExplorer(parachuteProjectFolder);
+                        JavaProjectExplorer explorer = new JavaProjectExplorer(parachuteProjectFolder);
                         parachuteProjectExplorers.add(explorer);
 
                         String mainClass = parachuteProjectFolder.getFileName().toString();
@@ -68,7 +68,7 @@ public class ParachuteGenerator {
         return provider;
     }
 
-    public List<JavaParachuteProjectExplorer> getParachuteProjectExplorers() {
+    public List<JavaProjectExplorer> getParachuteProjectExplorers() {
         return parachuteProjectExplorers;
     }
 

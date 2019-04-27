@@ -5,8 +5,9 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.jgit.api.errors.GitAPIException;
 import org.parachutesmethod.framework.extraction.ParachuteExtractor;
-import org.parachutesmethod.framework.extraction.exceptions.NotSupportedLanguageException;
-import org.parachutesmethod.framework.extraction.exceptions.NotSupportedRepositoryTypeException;
+import org.parachutesmethod.framework.extraction.exceptions.LangSupportException;
+import org.parachutesmethod.framework.extraction.exceptions.ProjectParsingException;
+import org.parachutesmethod.framework.extraction.exceptions.WrongRepositoryException;
 import org.parachutesmethod.framework.generation.ParachuteGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,14 @@ public class MainResource {
         return "api";
     }
 
+    /**
+     * Extracts annotated parachute bundles for a given repository
+     *
+     * @param url  URL of the repository that contains annotated parachutes
+     * @param lang application's programming language
+     * @return the path to the folder containing extracted parachutes
+     * @throws Exception an exception occurred while extraction
+     */
     @POST
     @Path("extract")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -43,14 +52,20 @@ public class MainResource {
         try {
             ParachuteExtractor p = new ParachuteExtractor<>(new URL(url), lang);
 
-            return Response.ok().entity(p.extractParachutes().toString()).build();
-        } catch (IOException | GitAPIException | NotSupportedRepositoryTypeException | NotSupportedLanguageException e) {
+            return Response.ok().entity(p.extract().toString()).build();
+        } catch (IOException | GitAPIException | WrongRepositoryException | LangSupportException | ProjectParsingException e) {
             LOGGER.error(e.getMessage());
             e.printStackTrace();
             return Response.serverError().entity(e.getMessage()).build();
         }
     }
 
+    /**
+     * Generates parachute deployment bundles for a given cloud service provider
+     *
+     * @param path the path to extracted provider-agnostic parachute bundles
+     * @param lang application's programming language
+     */
     @POST
     @Path("generate")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)

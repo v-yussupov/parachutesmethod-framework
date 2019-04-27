@@ -30,12 +30,12 @@ import org.apache.maven.shared.invoker.InvocationResult;
 import org.apache.maven.shared.invoker.Invoker;
 import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
-import org.parachutesmethod.framework.extraction.explorers.java.JavaParachuteProjectExplorer;
+import org.parachutesmethod.framework.extraction.languages.java.JavaProjectExplorer;
 import org.parachutesmethod.framework.generation.Constants;
 
 public class AWSGenerator {
 
-    public static void generate(Path path, List<JavaParachuteProjectExplorer> parachuteProjectExplorers) throws IOException {
+    public static void generate(Path path, List<JavaProjectExplorer> parachuteProjectExplorers) throws IOException {
         Path bundlesDir = path.getParent().resolve(Constants.DEPLOYMENT_BUNDLES_FOLDER);
         Files.createDirectories(bundlesDir);
         Map<String, String> resourcePaths = new HashMap<>();

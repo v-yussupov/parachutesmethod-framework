@@ -1,22 +1,25 @@
 package org.parachutesmethod.framework.models.java.projectmodel;
 
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
+import org.parachutesmethod.framework.models.java.JavaConfiguration;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.TypeDeclaration;
-import org.parachutesmethod.framework.models.Constants;
-
 public class JavaClass extends AbstractDeclarationContainer<ClassOrInterfaceDeclaration> {
+    private String packageName;
     private List<JavaMethod> methods = new ArrayList<>();
     private List<JavaClass> innerClasses = new ArrayList<>();
     private boolean withParachutes;
     private String resourcePath;
 
     public JavaClass(JavaProjectFile containingFile, ClassOrInterfaceDeclaration cd) {
-        this.containingFile = containingFile;
+        this.packageName = containingFile.getPackageName();
         this.name = cd.getNameAsString();
+
+        this.containingFile = containingFile;
         this.declaration = cd;
 
         if (cd.isNestedType() && cd.getParentNode().isPresent()) {
@@ -25,7 +28,7 @@ public class JavaClass extends AbstractDeclarationContainer<ClassOrInterfaceDecl
 
         if (!cd.getAnnotations().isEmpty()) {
             cd.getAnnotations().forEach(a -> {
-                if (a.getNameAsString().equals(Constants.PATH_ANNOTATION)) {
+                if (a.getNameAsString().equals(JavaConfiguration.PATH_ANNOTATION.value())) {
                     resourcePath = a.asSingleMemberAnnotationExpr().getMemberValue().toString().replace("\"", "");
                 }
                 JavaAnnotation annotation = new JavaAnnotation(a);
@@ -36,10 +39,18 @@ public class JavaClass extends AbstractDeclarationContainer<ClassOrInterfaceDecl
         if (!cd.getMethods().isEmpty()) {
             cd.getMethods().forEach(md -> {
                 JavaMethod method = new JavaMethod(containingFile, this, md);
-                withParachutes |= method.isParachuteMethod();
                 methods.add(method);
+                withParachutes |= method.isParachuteMethod();
             });
         }
+    }
+
+    public String getPackageName() {
+        return packageName;
+    }
+
+    public String getFullClassName() {
+        return packageName.concat(".").concat(name);
     }
 
     public ClassOrInterfaceDeclaration getClassDeclaration() {
@@ -81,7 +92,7 @@ public class JavaClass extends AbstractDeclarationContainer<ClassOrInterfaceDecl
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append(String.format("Class: %s, Package: %s\n", name, containingFile.getPackageName()));
+        sb.append(String.format("Class: %s, Package: %s\n", name, packageName));
         sb.append(String.format("Methods_Count: %d\n", methods.size()));
         sb.append(String.format("HasParachutes: %s\n", withParachutes));
         if (Objects.nonNull(resourcePath)) {
@@ -96,4 +107,5 @@ public class JavaClass extends AbstractDeclarationContainer<ClassOrInterfaceDecl
 
         return sb.toString();
     }
+
 }

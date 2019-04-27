@@ -1,4 +1,4 @@
-package org.parachutesmethod.framework.extraction.explorers.java.visitors;
+package org.parachutesmethod.framework.extraction.languages.java.visitors;
 
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.visitor.VoidVisitorAdapter;

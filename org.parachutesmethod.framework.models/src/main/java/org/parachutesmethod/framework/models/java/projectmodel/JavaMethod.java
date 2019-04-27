@@ -14,7 +14,7 @@ import com.github.javaparser.ast.type.Type;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.parachutesmethod.framework.models.Constants;
+import org.parachutesmethod.framework.models.java.JavaConfiguration;
 
 public class JavaMethod {
 
@@ -102,7 +102,7 @@ public class JavaMethod {
     }
 
     private void findAnnotations() {
-        if (methodDeclaration.isAnnotationPresent(Constants.PARACHUTE_METHOD_ANNOTATION)) {
+        if (methodDeclaration.isAnnotationPresent(JavaConfiguration.PARACHUTE_METHOD_ANNOTATION.value())) {
             this.isParachuteMethod = true;
         }
         if (methodDeclaration.getAnnotations().isNonEmpty()) {

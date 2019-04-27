@@ -1,4 +1,4 @@
-package org.parachutesmethod.framework.extraction.explorers.java;
+package org.parachutesmethod.framework.extraction.languages.java;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParserConfiguration;
@@ -11,11 +11,12 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSol
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.parachutesmethod.framework.extraction.Constants;
-import org.parachutesmethod.framework.extraction.explorers.ProjectCodeExplorer;
-import org.parachutesmethod.framework.extraction.explorers.SupportedLanguage;
-import org.parachutesmethod.framework.extraction.explorers.java.visitors.ClassOrInterfaceDeclarationCollector;
-import org.parachutesmethod.framework.extraction.explorers.java.visitors.ImportDeclarationCollector;
+import org.parachutesmethod.framework.common.BuildScript;
+import org.parachutesmethod.framework.common.FileExtension;
+import org.parachutesmethod.framework.extraction.languages.ProjectCodeExplorer;
+import org.parachutesmethod.framework.extraction.languages.SupportedLanguage;
+import org.parachutesmethod.framework.extraction.languages.java.visitors.ClassOrInterfaceDeclarationCollector;
+import org.parachutesmethod.framework.extraction.languages.java.visitors.ImportDeclarationCollector;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaClass;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaImport;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaInterface;
@@ -34,10 +35,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-;
-
-public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
-    private static Logger LOGGER = LoggerFactory.getLogger(JavaParachuteProjectExplorer.class);
+public class JavaProjectExplorer extends ProjectCodeExplorer {
+    private static Logger LOGGER = LoggerFactory.getLogger(JavaProjectExplorer.class);
 
     private boolean hasParachutes;
     private List<JavaProjectFile> projectFiles = new ArrayList<>();
@@ -45,7 +44,7 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
     private Set<JavaInterface> projectInterfaces = new HashSet<>();
     private List<MavenProjectObjectModel> pomFiles = new ArrayList<>();
 
-    public JavaParachuteProjectExplorer(Path projectPath) throws IOException {
+    public JavaProjectExplorer(Path projectPath) throws IOException {
         super(projectPath, SupportedLanguage.JAVA);
 
         CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
@@ -84,13 +83,13 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
     }
 
     private void parseMavenPOMFiles() throws IOException {
-        findProjectFiles(Constants.EXTENSION_XML)
+        findProjectFiles(FileExtension.XML.extension())
                 .stream()
-                .filter((filePath) -> filePath.getFileName().toString().equals(Constants.MAVEN_POM.concat(Constants.EXTENSION_XML)))
+                .filter((filePath) -> filePath.getFileName().toString().equals(BuildScript.MAVEN.value().concat(FileExtension.XML.extension())))
                 .collect(Collectors.toList())
                 .forEach(pomPath -> {
                     try (FileInputStream in = new FileInputStream(pomPath.toString())) {
-                        LOGGER.info(String.format("Starting to parse Maven pom file located at", pomPath.getFileName().toString()));
+                        LOGGER.info(String.format("Starting to parse Maven pom file located at %s", pomPath.getFileName().toString()));
                         MavenXpp3Reader reader = new MavenXpp3Reader();
                         pomFiles.add(new MavenProjectObjectModel(pomPath, reader.read(in)));
                     } catch (IOException | XmlPullParserException e) {
@@ -156,19 +155,19 @@ public class JavaParachuteProjectExplorer extends ProjectCodeExplorer {
         return hasParachutes;
     }
 
-    public void printProjectFiles() {
+    private void printProjectFiles() {
         projectFiles.forEach(System.out::println);
     }
 
-    public void printProjectClasses() {
+    private void printProjectClasses() {
         projectClasses.forEach(System.out::println);
     }
 
-    public void printProjectInterfaces() {
+    private void printProjectInterfaces() {
         projectInterfaces.forEach(System.out::println);
     }
 
-    public void printParachuteMethods() {
+    private void printParachuteMethods() {
         getParachuteMethods().forEach(System.out::println);
     }
 

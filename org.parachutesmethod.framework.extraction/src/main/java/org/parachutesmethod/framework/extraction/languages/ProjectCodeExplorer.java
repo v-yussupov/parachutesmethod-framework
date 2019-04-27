@@ -1,4 +1,4 @@
-package org.parachutesmethod.framework.extraction.explorers;
+package org.parachutesmethod.framework.extraction.languages;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -1,16 +1,16 @@
 package org.parachutesmethod.framework.models.java.projectmodel;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
 import com.github.javaparser.ast.body.TypeDeclaration;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
 public abstract class AbstractDeclarationContainer<T> {
+    String name;
     JavaProjectFile containingFile;
-    protected String name;
     TypeDeclaration parent;
     T declaration;
     List<JavaAnnotation> annotations = new ArrayList<>();

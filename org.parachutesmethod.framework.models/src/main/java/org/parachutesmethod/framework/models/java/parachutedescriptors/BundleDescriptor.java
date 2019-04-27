@@ -1,4 +1,4 @@
-package org.parachutesmethod.framework.extraction;
+package org.parachutesmethod.framework.models.java.parachutedescriptors;
 
 import java.util.List;
 import java.util.Objects;
@@ -14,25 +14,26 @@ import org.parachutesmethod.framework.models.java.projectmodel.JavaImport;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
 
 @JsonIgnoreProperties( {"preparedParachute", "parachuteMethodData", "pojos"})
-public class ParachuteMethodDescriptor {
-    private String parachuteName;
+public class BundleDescriptor {
+    private String name;
+
     private JavaMethod parachuteMethodData;
     private CompilationUnit preparedParachute;
-    private ParachuteMethodAnnotationsDescriptor parachuteAnnotations;
+    private AnnotationsDescriptor parachuteAnnotations;
     private int retainedAnnotationsCount = 0;
 
-    ParachuteMethodDescriptor(JavaMethod parachute) {
-        parachuteName = parachute.getName();
+    public BundleDescriptor(JavaMethod parachute) {
+        name = parachute.getName();
         preparedParachute = new CompilationUnit();
         parachuteMethodData = parachute;
         parachute.getParachuteAnnotation()
                 .ifPresent(javaAnnotation ->
-                        parachuteAnnotations = new ParachuteMethodAnnotationsDescriptor(
+                        parachuteAnnotations = new AnnotationsDescriptor(
                                 javaAnnotation.getParameters()
                         )
                 );
 
-        preparedParachute.setPackageDeclaration(Constants.EXTRACTED_PARACHUTE_PACKAGE_NAME);
+        preparedParachute.setPackageDeclaration("org.parachutesmethod.extractedparachutes");
         setImports(preparedParachute, parachuteMethodData.getParentFile().getImports());
         constructClassWithParachute();
     }
@@ -44,7 +45,7 @@ public class ParachuteMethodDescriptor {
     }
 
     private void constructClassWithParachute() {
-        ClassOrInterfaceDeclaration classDeclaration = preparedParachute.addClass(parachuteName);
+        ClassOrInterfaceDeclaration classDeclaration = preparedParachute.addClass(name);
 
         MethodDeclaration md = parachuteMethodData.getMethodDeclaration();
         if (Objects.nonNull(parachuteAnnotations)) {
@@ -69,15 +70,15 @@ public class ParachuteMethodDescriptor {
     }
 
     @JsonProperty
-    String getParachuteName() {
-        return parachuteName;
+    public String getName() {
+        return name;
     }
 
-    CompilationUnit getPreparedParachute() {
+    public CompilationUnit getPreparedParachute() {
         return preparedParachute;
     }
 
-    public ParachuteMethodAnnotationsDescriptor getParachuteAnnotations() {
+    public AnnotationsDescriptor getParachuteAnnotations() {
         return parachuteAnnotations;
     }
 }

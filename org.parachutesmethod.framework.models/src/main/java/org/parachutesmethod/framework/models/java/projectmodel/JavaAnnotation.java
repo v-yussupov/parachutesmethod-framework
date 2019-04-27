@@ -1,13 +1,13 @@
 package org.parachutesmethod.framework.models.java.projectmodel;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
-import org.parachutesmethod.framework.models.Constants;
+import org.parachutesmethod.framework.models.java.JavaConfiguration;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class JavaAnnotation {
     private String name;
@@ -30,7 +30,7 @@ public class JavaAnnotation {
                 parameters.put(pair.getNameAsString(), pair.getValue().toString());
             }
         }
-        if (Constants.PARACHUTE_METHOD_ANNOTATION.equals(annotationExpression.getNameAsString())) {
+        if (JavaConfiguration.PARACHUTE_METHOD_ANNOTATION.value().equals(annotationExpression.getNameAsString())) {
             isParachuteAnnotation = true;
         }
     }
@@ -64,6 +64,6 @@ public class JavaAnnotation {
     }
 
     public boolean isPathAnnotation() {
-        return this.getName().equals(Constants.PATH_ANNOTATION);
+        return this.getName().equals(JavaConfiguration.PATH_ANNOTATION.value());
     }
 }
