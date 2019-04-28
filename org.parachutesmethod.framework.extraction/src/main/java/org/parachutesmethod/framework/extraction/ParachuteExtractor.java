@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.body.Parameter;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
@@ -20,10 +21,10 @@ import org.parachutesmethod.framework.extraction.languages.SupportedLanguage;
 import org.parachutesmethod.framework.extraction.languages.java.JavaProjectExplorer;
 import org.parachutesmethod.framework.models.java.JavaConfiguration;
 import org.parachutesmethod.framework.models.java.parachutedescriptors.BundleDescriptor;
+import org.parachutesmethod.framework.models.java.parachutedescriptors.ParachuteInputType;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaClass;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
 import org.parachutesmethod.framework.models.java.projectmodel.MavenProjectObjectModel;
-import org.parachutesmethod.framework.models.java.parachutedescriptors.ParachuteInputType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -154,7 +155,6 @@ public class ParachuteExtractor<T> {
 
             BundleDescriptor descriptor = new BundleDescriptor(parachuteMethod.getName(), parachuteMethod.getParentFile().getPackageName());
 
-
             // prepare directories
             String fileName = createParachuteFileName(descriptor.getParachuteName());
             Path dir = bundlePath.resolve(descriptor.getParachuteName().toLowerCase());
@@ -237,10 +237,27 @@ public class ParachuteExtractor<T> {
         }
     }
 
-    private List<ParachuteInputType> resolveInputs() {
+    private List<ParachuteInputType> resolveInputs(Set<JavaClass> projectClasses, JavaMethod parachuteMethod) {
 
+        /*parachuteMethod.getInputParameters().forEach(p -> {
+            if (!checkIfPrimitiveType(p)) {
+                // check the type in all classes
+
+                // for (String name : parsedTypes) {
+                //            projectClasses.forEach(c -> {
+                //                if (c.getName().equals(name)) {
+                //                    result.add(c);
+                //                }
+                //            });
+                //        }
+            }
+        });*/
 
         return null;
+    }
+
+    private boolean checkIfPrimitiveType(Parameter p) {
+        return false;
     }
 
     private List<JavaClass> resolveIOClasses(Set<JavaClass> projectClasses, JavaMethod parachuteMethod) {
