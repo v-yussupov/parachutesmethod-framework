@@ -1,8 +1,5 @@
 package org.parachutesmethod.framework.models.java.parachutedescriptors;
 
-import java.util.List;
-import java.util.Objects;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.javaparser.ast.CompilationUnit;
@@ -10,30 +7,47 @@ import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import org.parachutesmethod.framework.models.java.JavaConfiguration;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaImport;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
 
-@JsonIgnoreProperties( {"preparedParachute", "parachuteMethodData", "pojos"})
-public class BundleDescriptor {
-    private String name;
+import java.util.List;
+import java.util.Objects;
 
+@JsonIgnoreProperties({"preparedParachute", "parachuteMethodData"})
+public class BundleDescriptor {
+    private String parachuteName;
+    private String packageName;
     private JavaMethod parachuteMethodData;
-    private CompilationUnit preparedParachute;
+
+    private List<String> imports;
     private AnnotationsDescriptor parachuteAnnotations;
+    private String methodBody;
+    private ParachuteInputType input;
+    private ParachuteOutputType output;
+    private BuildScriptDescriptor buildScript;
+    private String endpointPath;
+
+    private CompilationUnit preparedParachute;
     private int retainedAnnotationsCount = 0;
 
-    public BundleDescriptor(JavaMethod parachute) {
-        name = parachute.getName();
+    public BundleDescriptor(String parachuteName, String packageName) {
+        this.parachuteName = parachuteName;
+        this.packageName = packageName;
+
+        //parachuteMethodData = parachute;
+    }
+
+    private void prepareParachute() {
         preparedParachute = new CompilationUnit();
-        parachuteMethodData = parachute;
-        parachute.getParachuteAnnotation()
+        parachuteMethodData.getParachuteAnnotation()
                 .ifPresent(javaAnnotation ->
                         parachuteAnnotations = new AnnotationsDescriptor(
                                 javaAnnotation.getParameters()
                         )
                 );
 
-        preparedParachute.setPackageDeclaration("org.parachutesmethod.extractedparachutes");
+        preparedParachute.setPackageDeclaration(JavaConfiguration.EXTRACTED_PARACHUTE_PACKAGE_NAME.value());
         setImports(preparedParachute, parachuteMethodData.getParentFile().getImports());
         constructClassWithParachute();
     }
@@ -45,7 +59,7 @@ public class BundleDescriptor {
     }
 
     private void constructClassWithParachute() {
-        ClassOrInterfaceDeclaration classDeclaration = preparedParachute.addClass(name);
+        ClassOrInterfaceDeclaration classDeclaration = preparedParachute.addClass(parachuteName);
 
         MethodDeclaration md = parachuteMethodData.getMethodDeclaration();
         if (Objects.nonNull(parachuteAnnotations)) {
@@ -70,8 +84,8 @@ public class BundleDescriptor {
     }
 
     @JsonProperty
-    public String getName() {
-        return name;
+    public String getParachuteName() {
+        return parachuteName;
     }
 
     public CompilationUnit getPreparedParachute() {
@@ -80,5 +94,9 @@ public class BundleDescriptor {
 
     public AnnotationsDescriptor getParachuteAnnotations() {
         return parachuteAnnotations;
+    }
+
+    public String getPackageName() {
+        return packageName;
     }
 }

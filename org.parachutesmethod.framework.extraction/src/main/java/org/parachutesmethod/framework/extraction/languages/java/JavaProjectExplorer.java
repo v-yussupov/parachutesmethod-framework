@@ -58,6 +58,9 @@ public class JavaProjectExplorer extends ProjectCodeExplorer {
         JavaParser.setStaticConfiguration(parserConfiguration);
 
         parseProjectFiles();
+
+        // Assumption: Maven is used as a build tool
+        // TODO add support for, e.g., Gradle & other options
         parseMavenPOMFiles();
     }
 
@@ -85,7 +88,7 @@ public class JavaProjectExplorer extends ProjectCodeExplorer {
     private void parseMavenPOMFiles() throws IOException {
         findProjectFiles(FileExtension.XML.extension())
                 .stream()
-                .filter((filePath) -> filePath.getFileName().toString().equals(BuildScript.MAVEN.value().concat(FileExtension.XML.extension())))
+                .filter((filePath) -> filePath.getFileName().toString().equals(BuildScript.MAVEN.value()))
                 .collect(Collectors.toList())
                 .forEach(pomPath -> {
                     try (FileInputStream in = new FileInputStream(pomPath.toString())) {

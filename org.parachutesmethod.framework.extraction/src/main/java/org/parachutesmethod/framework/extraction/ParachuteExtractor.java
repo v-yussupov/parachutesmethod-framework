@@ -23,6 +23,7 @@ import org.parachutesmethod.framework.models.java.parachutedescriptors.BundleDes
 import org.parachutesmethod.framework.models.java.projectmodel.JavaClass;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
 import org.parachutesmethod.framework.models.java.projectmodel.MavenProjectObjectModel;
+import org.parachutesmethod.framework.models.java.parachutedescriptors.ParachuteInputType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -140,7 +141,7 @@ public class ParachuteExtractor<T> {
         if (explorer.hasParachutes()) {
             Path tempPath = tempRootDirectoryPath.resolve(ExtractionSetting.GENERATION_BUNDLES_FOLDER.value());
             explorer.getParachuteMethods().forEach(parachuteMethod -> {
-                processParachute(tempPath, explorer, parachuteMethod);
+                prepareJavaParachute(tempPath, explorer, parachuteMethod);
             });
 
             return Optional.of(tempPath);
@@ -148,18 +149,20 @@ public class ParachuteExtractor<T> {
         throw new ProjectParsingException("Project contains no parachute annotations");
     }
 
-    private void processParachute(Path tempParachuteGenerationBundlesPath, JavaProjectExplorer explorer, JavaMethod parachuteMethod) {
+    private void prepareJavaParachute(Path bundlePath, JavaProjectExplorer explorer, JavaMethod parachuteMethod) {
         try {
-            // prepare directories
-            BundleDescriptor descriptor = new BundleDescriptor(parachuteMethod);
 
-            String fileName = createParachuteFileName(descriptor.getName());
-            Path dir = tempParachuteGenerationBundlesPath.resolve(descriptor.getName().toLowerCase());
+            BundleDescriptor descriptor = new BundleDescriptor(parachuteMethod.getName(), parachuteMethod.getParentFile().getPackageName());
+
+
+            // prepare directories
+            String fileName = createParachuteFileName(descriptor.getParachuteName());
+            Path dir = bundlePath.resolve(descriptor.getParachuteName().toLowerCase());
             Files.createDirectories(dir);
 
             Files.createFile(dir.resolve(fileName));
 
-            List<JavaClass> dependencyClasses = mapRequestResponseClasses(explorer.getProjectClasses(), parachuteMethod);
+            List<JavaClass> dependencyClasses = resolveIOClasses(explorer.getProjectClasses(), parachuteMethod);
             List<JavaClass> staticClasses = new ArrayList<>();
 
             dependencyClasses.forEach(depClass -> {
@@ -207,14 +210,14 @@ public class ParachuteExtractor<T> {
             mapper.writerWithDefaultPrettyPrinter().writeValue(spec.toFile(), descriptor);
 
             // Extract maven dependencies
-            Path pom = dir.resolve(BuildScript.MAVEN.value().concat(FileExtension.XML.extension()));
+            Path pom = dir.resolve(BuildScript.MAVEN.value());
             Files.createFile(pom);
             try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(pom.toFile()), StandardCharsets.UTF_8))) {
                 Model model = new Model();
-                model.setName("parachute-method." + descriptor.getName().toLowerCase());
+                model.setName("parachute-method." + descriptor.getParachuteName().toLowerCase());
                 model.setModelVersion("4.0.0");
                 model.setGroupId(JavaConfiguration.EXTRACTED_PARACHUTE_PACKAGE_NAME.value());
-                model.setArtifactId(JavaConfiguration.EXTRACTED_PARACHUTE_PACKAGE_NAME.value().concat("-").concat(descriptor.getName().toLowerCase()));
+                model.setArtifactId(JavaConfiguration.EXTRACTED_PARACHUTE_PACKAGE_NAME.value().concat("-").concat(descriptor.getParachuteName().toLowerCase()));
                 model.setVersion("1.0-SNAPSHOT");
 
                 Set<Dependency> dependencies = new HashSet<>();
@@ -234,7 +237,13 @@ public class ParachuteExtractor<T> {
         }
     }
 
-    private List<JavaClass> mapRequestResponseClasses(Set<JavaClass> projectClasses, JavaMethod parachuteMethod) {
+    private List<ParachuteInputType> resolveInputs() {
+
+
+        return null;
+    }
+
+    private List<JavaClass> resolveIOClasses(Set<JavaClass> projectClasses, JavaMethod parachuteMethod) {
         List<String> parsedTypes = new ArrayList<>();
 
         parachuteMethod.getInputParameters().forEach(p -> parsedTypes.add(p.getType().asString()));
