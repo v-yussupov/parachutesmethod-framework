@@ -99,4 +99,12 @@ public class BundleDescriptor {
     public String getPackageName() {
         return packageName;
     }
+
+    public List<String> getImports() {
+        return imports;
+    }
+
+    public void setImports(List<String> imports) {
+        this.imports = imports;
+    }
 }

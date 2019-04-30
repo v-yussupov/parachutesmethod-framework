@@ -1,12 +1,24 @@
 package org.parachutesmethod.framework.extraction.languages.java;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.VoidVisitor;
+import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
+import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
@@ -26,15 +38,6 @@ import org.parachutesmethod.framework.models.java.projectmodel.MavenProjectObjec
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 public class JavaProjectExplorer extends ProjectCodeExplorer {
     private static Logger LOGGER = LoggerFactory.getLogger(JavaProjectExplorer.class);
 
@@ -44,10 +47,12 @@ public class JavaProjectExplorer extends ProjectCodeExplorer {
     private Set<JavaInterface> projectInterfaces = new HashSet<>();
     private List<MavenProjectObjectModel> pomFiles = new ArrayList<>();
 
+    private CombinedTypeSolver combinedTypeSolver;
+
     public JavaProjectExplorer(Path projectPath) throws IOException {
         super(projectPath, SupportedLanguage.JAVA);
 
-        CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
+        combinedTypeSolver = new CombinedTypeSolver();
         combinedTypeSolver.add(new ReflectionTypeSolver());
         JavaSymbolSolver symbolSolver = new JavaSymbolSolver(combinedTypeSolver);
 
@@ -156,6 +161,10 @@ public class JavaProjectExplorer extends ProjectCodeExplorer {
 
     public boolean hasParachutes() {
         return hasParachutes;
+    }
+
+    public ResolvedType resolveType(Type type) {
+        return JavaParserFacade.get(combinedTypeSolver).convertToUsage(type);
     }
 
     private void printProjectFiles() {

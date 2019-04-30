@@ -1,10 +1,27 @@
 package org.parachutesmethod.framework.extraction;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.NodeList;
-import com.github.javaparser.ast.body.Parameter;
+import com.github.javaparser.resolution.types.ResolvedType;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
@@ -27,23 +44,6 @@ import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
 import org.parachutesmethod.framework.models.java.projectmodel.MavenProjectObjectModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 
 public class ParachuteExtractor<T> {
 
@@ -165,6 +165,9 @@ public class ParachuteExtractor<T> {
             List<JavaClass> dependencyClasses = resolveIOClasses(explorer.getProjectClasses(), parachuteMethod);
             List<JavaClass> staticClasses = new ArrayList<>();
 
+
+            resolveInputs(explorer, parachuteMethod);
+
             dependencyClasses.forEach(depClass -> {
                 String pojoName = depClass.getName().concat(SupportedLanguage.JAVA.getFileExtension());
                 try {
@@ -237,33 +240,61 @@ public class ParachuteExtractor<T> {
         }
     }
 
-    private List<ParachuteInputType> resolveInputs(Set<JavaClass> projectClasses, JavaMethod parachuteMethod) {
+    private List<ParachuteInputType> resolveInputs(JavaProjectExplorer explorer, JavaMethod parachuteMethod) {
+        List<ParachuteInputType> result = new ArrayList<>();
 
-        /*parachuteMethod.getInputParameters().forEach(p -> {
-            if (!checkIfPrimitiveType(p)) {
-                // check the type in all classes
+        parachuteMethod.getInputParameters().forEach(p -> {
+            if (!p.getType().isPrimitiveType()) {
 
-                // for (String name : parsedTypes) {
-                //            projectClasses.forEach(c -> {
-                //                if (c.getName().equals(name)) {
-                //                    result.add(c);
-                //                }
-                //            });
-                //        }
+                ResolvedType resolved = explorer.resolveType(p.getType());
+                System.out.println(resolved.describe());
+
+                ParachuteInputType inputType = new ParachuteInputType(true, resolved.describe());
+
+                explorer.getProjectClasses().forEach(c -> {
+
+                    if (c.getFullClassName().equals(resolved.describe())) {
+                        // full names are equal, save the class and check the dependencies
+                        // result.add(c);
+                        //
+
+                    }
+                });
+
+
+                //TODO check if the parameter name is in imports
+                // consider star imports too
+                // lookup in project classes if imported
+                //findParameterInImports();
+                //findParameterInSamePackage();
+                //findParameterInSameFile();
+
+                //p.getType().resolve();
+
+
+
+
+                //parachuteMethod.getParentFile().getImports();
+
+
+
+
+                result.add(inputType);
+
+            } else {
+                result.add(new ParachuteInputType(false, p.getType().toString()));
             }
-        });*/
+        });
 
-        return null;
-    }
-
-    private boolean checkIfPrimitiveType(Parameter p) {
-        return false;
+        return result;
     }
 
     private List<JavaClass> resolveIOClasses(Set<JavaClass> projectClasses, JavaMethod parachuteMethod) {
         List<String> parsedTypes = new ArrayList<>();
 
-        parachuteMethod.getInputParameters().forEach(p -> parsedTypes.add(p.getType().asString()));
+        parachuteMethod.getInputParameters().forEach(p -> {
+            parsedTypes.add(p.getType().asString());
+        });
         parsedTypes.add(parachuteMethod.getReturnType().asString());
 
         List<JavaClass> result = new ArrayList<>();
