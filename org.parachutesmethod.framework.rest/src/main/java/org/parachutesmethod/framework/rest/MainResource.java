@@ -63,18 +63,17 @@ public class MainResource {
     /**
      * Generates parachute deployment bundles for a given cloud service provider
      *
-     * @param path the path to extracted provider-agnostic parachute bundles
-     * @param lang application's programming language
+     * @param path     the path to extracted provider-agnostic parachute bundles
+     * @param provider the target cloud service provider
      */
     @POST
     @Path("generate")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
     public Response generateParachute(@ApiParam(name = "path", required = true) @FormParam("path") String path,
-                                      @ApiParam(name = "lang", required = true) @FormParam("lang") String lang,
                                       @ApiParam(name = "provider", required = true) @FormParam("provider") String provider) {
         try {
-            ParachuteGenerator gen = new ParachuteGenerator(path, lang, provider);
+            ParachuteGenerator gen = new ParachuteGenerator(path, provider);
             gen.parseParachuteProject();
             gen.generateParachuteBundles();
 

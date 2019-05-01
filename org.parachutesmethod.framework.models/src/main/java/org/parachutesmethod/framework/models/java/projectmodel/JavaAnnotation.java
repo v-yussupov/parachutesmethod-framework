@@ -15,27 +15,34 @@ public class JavaAnnotation {
     private String name;
     private String annotationExpressionAsString;
     private AnnotationExpr annotationExpression;
-    private boolean isMarkerAnnotation;
-    private boolean isParachuteAnnotation;
+    private boolean markerAnnotation;
+    private boolean parachuteAnnotation;
+    private boolean pathAnnotation;
     private Map<String, String> parameters;
 
-    JavaAnnotation(AnnotationExpr annotationExpression) {
+    public JavaAnnotation() {
+    }
+
+    public JavaAnnotation(AnnotationExpr annotationExpression) {
         this.annotationExpressionAsString = annotationExpression.toString();
         this.annotationExpression = annotationExpression;
         this.name = annotationExpression.getNameAsString();
 
         if (annotationExpression.getClass().equals(MarkerAnnotationExpr.class)) {
-            isMarkerAnnotation = true;
+            markerAnnotation = true;
         }
         if (annotationExpression.getClass().equals(NormalAnnotationExpr.class)) {
-            isMarkerAnnotation = false;
+            markerAnnotation = false;
             parameters = new HashMap<>();
             for (MemberValuePair pair : ((NormalAnnotationExpr) annotationExpression).getPairs()) {
                 parameters.put(pair.getNameAsString(), pair.getValue().toString());
             }
         }
         if (JavaConfiguration.PARACHUTE_METHOD_ANNOTATION.value().equals(annotationExpression.getNameAsString())) {
-            isParachuteAnnotation = true;
+            parachuteAnnotation = true;
+        }
+        if (this.getName().equals(JavaConfiguration.PATH_ANNOTATION.value())) {
+            pathAnnotation = true;
         }
     }
 
@@ -43,20 +50,40 @@ public class JavaAnnotation {
         return name;
     }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public String getAnnotationExpressionAsString() {
         return annotationExpressionAsString;
+    }
+
+    public void setAnnotationExpressionAsString(String annotationExpressionAsString) {
+        this.annotationExpressionAsString = annotationExpressionAsString;
     }
 
     public AnnotationExpr getAnnotationExpression() {
         return annotationExpression;
     }
 
+    public void setAnnotationExpression(AnnotationExpr annotationExpression) {
+        this.annotationExpression = annotationExpression;
+    }
+
     public boolean isMarkerAnnotation() {
-        return isMarkerAnnotation;
+        return markerAnnotation;
+    }
+
+    public void setMarkerAnnotation(boolean markerAnnotation) {
+        this.markerAnnotation = markerAnnotation;
     }
 
     public Map<String, String> getParameters() {
         return parameters;
+    }
+
+    public void setParameters(Map<String, String> parameters) {
+        this.parameters = parameters;
     }
 
     public boolean containsParameter(String name) {
@@ -68,10 +95,18 @@ public class JavaAnnotation {
     }
 
     public boolean isParachuteAnnotation() {
-        return isParachuteAnnotation;
+        return parachuteAnnotation;
+    }
+
+    public void setParachuteAnnotation(boolean parachuteAnnotation) {
+        this.parachuteAnnotation = parachuteAnnotation;
     }
 
     public boolean isPathAnnotation() {
-        return this.getName().equals(JavaConfiguration.PATH_ANNOTATION.value());
+        return pathAnnotation;
+    }
+
+    public void setPathAnnotation(boolean pathAnnotation) {
+        this.pathAnnotation = pathAnnotation;
     }
 }

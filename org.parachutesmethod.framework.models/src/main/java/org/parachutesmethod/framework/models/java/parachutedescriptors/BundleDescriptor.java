@@ -1,22 +1,19 @@
 package org.parachutesmethod.framework.models.java.parachutedescriptors;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.NodeList;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaImport;
-import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@JsonIgnoreProperties({"preparedParachute", "parachuteMethodData"})
 public class BundleDescriptor {
+    private String programmingLanguage;
     private String parachuteName;
     private String packageName;
     private String endpointPath;
-    private JavaMethod parachuteMethodData;
+    //private JavaMethod parachuteMethodData;
 
     private List<String> imports = new ArrayList<>();
     private AnnotationsDescriptor parachuteAnnotations;
@@ -25,14 +22,16 @@ public class BundleDescriptor {
     private ParachuteOutputType outputType;
     private BuildScriptDescriptor buildScript;
 
-    private CompilationUnit preparedParachute;
-    private int retainedAnnotationsCount = 0;
+    //private CompilationUnit preparedParachute;
+    //private int retainedAnnotationsCount = 0;
 
-    public BundleDescriptor(String parachuteName, String packageName) {
+    public BundleDescriptor() {
+    }
+
+    public BundleDescriptor(String programmingLanguage, String parachuteName, String packageName) {
+        this.programmingLanguage = programmingLanguage;
         this.parachuteName = parachuteName;
         this.packageName = packageName;
-
-        //parachuteMethodData = parachute;
     }
 
     private void prepareParachute() {
@@ -80,13 +79,24 @@ public class BundleDescriptor {
         classDeclaration.getMembers().add(md);*/
     }
 
-    @JsonProperty
+    /*public CompilationUnit getPreparedParachute() {
+        return preparedParachute;
+    }*/
+
+    public String getProgrammingLanguage() {
+        return programmingLanguage;
+    }
+
+    public void setProgrammingLanguage(String programmingLanguage) {
+        this.programmingLanguage = programmingLanguage;
+    }
+
     public String getParachuteName() {
         return parachuteName;
     }
 
-    public CompilationUnit getPreparedParachute() {
-        return preparedParachute;
+    public void setParachuteName(String parachuteName) {
+        this.parachuteName = parachuteName;
     }
 
     public AnnotationsDescriptor getParachuteAnnotations() {
@@ -99,6 +109,10 @@ public class BundleDescriptor {
 
     public String getPackageName() {
         return packageName;
+    }
+
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
     }
 
     public List<String> getImports() {
@@ -156,4 +170,5 @@ public class BundleDescriptor {
     public void setBuildScript(BuildScriptDescriptor buildScript) {
         this.buildScript = buildScript;
     }
+
 }

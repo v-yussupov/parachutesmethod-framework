@@ -1,5 +1,6 @@
 package org.parachutesmethod.framework.extraction.languages;
 
+import org.parachutesmethod.framework.common.FileExtension;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,7 +23,7 @@ public abstract class ProjectCodeExplorer {
     }
 
     protected List<Path> findProjectFiles() throws IOException {
-        return findProjectFiles(projectLanguage.getFileExtension());
+        return findProjectFiles(FileExtension.valueOf(projectLanguage.name()).extension());
     }
 
     protected List<Path> findProjectFiles(String fileExtension) throws IOException {

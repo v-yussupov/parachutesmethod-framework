@@ -153,11 +153,11 @@ public class ParachuteExtractor<T> {
     private void prepareJavaParachute(Path bundlePath, JavaProjectExplorer explorer, JavaMethod parachuteMethod) {
         try {
             // prepare parachute bundle directory
-            Path dir = bundlePath.resolve(parachuteMethod.getName());
+            Path dir = bundlePath.resolve(parachuteMethod.getName().toLowerCase());
             Files.createDirectories(dir);
 
             // instantiate the parachute descriptor
-            BundleDescriptor descriptor = new BundleDescriptor(parachuteMethod.getName(), parachuteMethod.getParentFile().getPackageName());
+            BundleDescriptor descriptor = new BundleDescriptor(SupportedLanguage.JAVA.getName(), parachuteMethod.getName(), parachuteMethod.getParentFile().getPackageName());
             parachuteMethod.getParentFile().getImports().forEach(i -> descriptor.addImport(i.getImportDeclaration().toString()));
             descriptor.setMethodBody(parachuteMethod.getMethodDeclaration().toString());
             descriptor.setEndpointPath(parachuteMethod.getResourcePath());
@@ -365,7 +365,7 @@ public class ParachuteExtractor<T> {
     }
 
     private String createParachuteFileName(String parachuteName) {
-        return parachuteName.concat(SupportedLanguage.JAVA.getFileExtension());
+        return parachuteName.concat(FileExtension.JAVA.extension());
     }
 
     private void createParachuteBundleFolder(String parachuteName) {
