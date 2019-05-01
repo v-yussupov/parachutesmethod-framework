@@ -1,14 +1,5 @@
 package org.parachutesmethod.framework.extraction.languages.java;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
@@ -19,7 +10,9 @@ import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
+import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
@@ -38,6 +31,15 @@ import org.parachutesmethod.framework.models.java.projectmodel.MavenProjectObjec
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 public class JavaProjectExplorer extends ProjectCodeExplorer {
     private static Logger LOGGER = LoggerFactory.getLogger(JavaProjectExplorer.class);
 
@@ -45,15 +47,21 @@ public class JavaProjectExplorer extends ProjectCodeExplorer {
     private List<JavaProjectFile> projectFiles = new ArrayList<>();
     private Set<JavaClass> projectClasses = new HashSet<>();
     private Set<JavaInterface> projectInterfaces = new HashSet<>();
+    private Set<String> packageNames = new HashSet<>();
     private List<MavenProjectObjectModel> pomFiles = new ArrayList<>();
 
-    private CombinedTypeSolver combinedTypeSolver;
+    private TypeSolver combinedTypeSolver;
 
     public JavaProjectExplorer(Path projectPath) throws IOException {
         super(projectPath, SupportedLanguage.JAVA);
 
-        combinedTypeSolver = new CombinedTypeSolver();
-        combinedTypeSolver.add(new ReflectionTypeSolver());
+        LOGGER.info("project src folder:" + projectPath.resolve("src"));
+
+        combinedTypeSolver = new CombinedTypeSolver(
+                new ReflectionTypeSolver(),
+                new JavaParserTypeSolver(projectPath.resolve("src/main/java").toFile())
+        );
+
         JavaSymbolSolver symbolSolver = new JavaSymbolSolver(combinedTypeSolver);
 
         ParserConfiguration parserConfiguration = new ParserConfiguration()
@@ -76,6 +84,7 @@ public class JavaProjectExplorer extends ProjectCodeExplorer {
                 CompilationUnit parsedFile = JavaParser.parse(in);
 
                 JavaProjectFile projectFile = new JavaProjectFile(path, parsedFile);
+                packageNames.add(projectFile.getPackageName());
                 projectFile.setImports(findJavaImports(parsedFile));
                 projectFile.processJavaClassesAndInterfaces(findJavaClassesAndInterfaces(parsedFile));
 
@@ -129,6 +138,10 @@ public class JavaProjectExplorer extends ProjectCodeExplorer {
 
     public List<JavaProjectFile> getProjectFiles() {
         return projectFiles;
+    }
+
+    public Set<String> getPackageNames() {
+        return packageNames;
     }
 
     public List<MavenProjectObjectModel> getPomFiles() {

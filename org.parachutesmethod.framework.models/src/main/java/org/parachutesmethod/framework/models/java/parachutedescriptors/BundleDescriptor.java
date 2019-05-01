@@ -5,28 +5,25 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.NodeList;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import org.parachutesmethod.framework.models.java.JavaConfiguration;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaImport;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @JsonIgnoreProperties({"preparedParachute", "parachuteMethodData"})
 public class BundleDescriptor {
     private String parachuteName;
     private String packageName;
+    private String endpointPath;
     private JavaMethod parachuteMethodData;
 
-    private List<String> imports;
+    private List<String> imports = new ArrayList<>();
     private AnnotationsDescriptor parachuteAnnotations;
     private String methodBody;
-    private ParachuteInputType input;
-    private ParachuteOutputType output;
+    private List<ParachuteInputType> inputTypes = new ArrayList<>();
+    private ParachuteOutputType outputType;
     private BuildScriptDescriptor buildScript;
-    private String endpointPath;
 
     private CompilationUnit preparedParachute;
     private int retainedAnnotationsCount = 0;
@@ -39,7 +36,7 @@ public class BundleDescriptor {
     }
 
     private void prepareParachute() {
-        preparedParachute = new CompilationUnit();
+        /*preparedParachute = new CompilationUnit();
         parachuteMethodData.getParachuteAnnotation()
                 .ifPresent(javaAnnotation ->
                         parachuteAnnotations = new AnnotationsDescriptor(
@@ -49,7 +46,7 @@ public class BundleDescriptor {
 
         preparedParachute.setPackageDeclaration(JavaConfiguration.EXTRACTED_PARACHUTE_PACKAGE_NAME.value());
         setImports(preparedParachute, parachuteMethodData.getParentFile().getImports());
-        constructClassWithParachute();
+        constructClassWithParachute();*/
     }
 
     private void setImports(CompilationUnit cu, List<JavaImport> javaImports) {
@@ -59,7 +56,7 @@ public class BundleDescriptor {
     }
 
     private void constructClassWithParachute() {
-        ClassOrInterfaceDeclaration classDeclaration = preparedParachute.addClass(parachuteName);
+        /*ClassOrInterfaceDeclaration classDeclaration = preparedParachute.addClass(parachuteName);
 
         MethodDeclaration md = parachuteMethodData.getMethodDeclaration();
         if (Objects.nonNull(parachuteAnnotations)) {
@@ -80,7 +77,7 @@ public class BundleDescriptor {
             md.setAnnotations(new NodeList<>());
         }
 
-        classDeclaration.getMembers().add(md);
+        classDeclaration.getMembers().add(md);*/
     }
 
     @JsonProperty
@@ -96,6 +93,10 @@ public class BundleDescriptor {
         return parachuteAnnotations;
     }
 
+    public void setParachuteAnnotations(AnnotationsDescriptor parachuteAnnotations) {
+        this.parachuteAnnotations = parachuteAnnotations;
+    }
+
     public String getPackageName() {
         return packageName;
     }
@@ -106,5 +107,53 @@ public class BundleDescriptor {
 
     public void setImports(List<String> imports) {
         this.imports = imports;
+    }
+
+    public void addImport(String importDeclaration) {
+        imports.add(importDeclaration);
+    }
+
+    public List<ParachuteInputType> getInputTypes() {
+        return inputTypes;
+    }
+
+    public void setInputTypes(List<ParachuteInputType> inputTypes) {
+        this.inputTypes = inputTypes;
+    }
+
+    public void addInputType(ParachuteInputType inputType) {
+        inputTypes.add(inputType);
+    }
+
+    public ParachuteOutputType getOutputType() {
+        return outputType;
+    }
+
+    public void setOutputType(ParachuteOutputType outputType) {
+        this.outputType = outputType;
+    }
+
+    public String getMethodBody() {
+        return methodBody;
+    }
+
+    public void setMethodBody(String methodBody) {
+        this.methodBody = methodBody;
+    }
+
+    public String getEndpointPath() {
+        return endpointPath;
+    }
+
+    public void setEndpointPath(String endpointPath) {
+        this.endpointPath = endpointPath;
+    }
+
+    public BuildScriptDescriptor getBuildScript() {
+        return buildScript;
+    }
+
+    public void setBuildScript(BuildScriptDescriptor buildScript) {
+        this.buildScript = buildScript;
     }
 }

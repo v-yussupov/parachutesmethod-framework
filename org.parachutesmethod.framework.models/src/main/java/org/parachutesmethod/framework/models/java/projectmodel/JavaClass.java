@@ -1,5 +1,6 @@
 package org.parachutesmethod.framework.models.java.projectmodel;
 
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import org.parachutesmethod.framework.models.java.JavaConfiguration;
@@ -7,6 +8,7 @@ import org.parachutesmethod.framework.models.java.JavaConfiguration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class JavaClass extends AbstractDeclarationContainer<ClassOrInterfaceDeclaration> {
     private String packageName;
@@ -50,7 +52,25 @@ public class JavaClass extends AbstractDeclarationContainer<ClassOrInterfaceDecl
     }
 
     public String getFullClassName() {
-        return packageName.concat(".").concat(name);
+        TypeDeclaration parent = this.getParent();
+
+        StringBuilder innerClassesString = new StringBuilder();
+        while (Objects.nonNull(parent)) {
+            innerClassesString.append(parent.getNameAsString());
+            innerClassesString.append(".");
+            Optional<Node> newParent = parent.getParentNode();
+            if (newParent.isPresent() && newParent.get() instanceof TypeDeclaration) {
+                parent = (TypeDeclaration) newParent.get();
+            } else {
+                parent = null;
+            }
+        }
+
+        if (innerClassesString.length() > 0) {
+            return packageName.concat(".").concat(innerClassesString.toString()).concat(name);
+        } else {
+            return packageName.concat(".").concat(name);
+        }
     }
 
     public ClassOrInterfaceDeclaration getClassDeclaration() {

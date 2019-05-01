@@ -1,5 +1,6 @@
 package org.parachutesmethod.framework.models.java.projectmodel;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
@@ -9,14 +10,17 @@ import org.parachutesmethod.framework.models.java.JavaConfiguration;
 import java.util.HashMap;
 import java.util.Map;
 
+@JsonIgnoreProperties({"annotationExpression"})
 public class JavaAnnotation {
     private String name;
+    private String annotationExpressionAsString;
     private AnnotationExpr annotationExpression;
     private boolean isMarkerAnnotation;
     private boolean isParachuteAnnotation;
     private Map<String, String> parameters;
 
     JavaAnnotation(AnnotationExpr annotationExpression) {
+        this.annotationExpressionAsString = annotationExpression.toString();
         this.annotationExpression = annotationExpression;
         this.name = annotationExpression.getNameAsString();
 
@@ -37,6 +41,10 @@ public class JavaAnnotation {
 
     public String getName() {
         return name;
+    }
+
+    public String getAnnotationExpressionAsString() {
+        return annotationExpressionAsString;
     }
 
     public AnnotationExpr getAnnotationExpression() {

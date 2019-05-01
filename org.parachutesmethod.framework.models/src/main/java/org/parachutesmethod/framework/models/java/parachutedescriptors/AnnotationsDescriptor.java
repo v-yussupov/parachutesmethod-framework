@@ -1,39 +1,25 @@
 package org.parachutesmethod.framework.models.java.parachutedescriptors;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.parachutesmethod.framework.models.java.projectmodel.JavaAnnotation;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AnnotationsDescriptor {
-    @JsonProperty
-    private String overProvisioningFactorDirective;
-    @JsonProperty
-    private boolean backupRoute;
-    @JsonProperty
-    private boolean parachuteAnnotationRetained;
-    @JsonProperty
-    private boolean otherAnnotationRetained;
+    private List<JavaAnnotation> annotations = new ArrayList<>();
 
-    public AnnotationsDescriptor(Map<String, String> parameters) {
-        if (parameters.containsKey(ParachuteAnnotation.ROUTING_OVERPROVISIONING_FACTOR.value())) {
-            this.overProvisioningFactorDirective = parameters.get(ParachuteAnnotation.ROUTING_OVERPROVISIONING_FACTOR.value());
-        }
-        if (parameters.containsKey(ParachuteAnnotation.ROUTING_BACKUP_ROUTE.value())) {
-            this.backupRoute = Boolean.valueOf(parameters.get(ParachuteAnnotation.ROUTING_BACKUP_ROUTE.value()));
-        }
-        if (parameters.containsKey(ParachuteAnnotation.CONF_KEEP_PARACHUTE_ANNOTATIONS.value())) {
-            this.parachuteAnnotationRetained = Boolean.valueOf(parameters.get(ParachuteAnnotation.CONF_KEEP_PARACHUTE_ANNOTATIONS.value()));
-        }
-        if (parameters.containsKey(ParachuteAnnotation.CONF_KEEP_OTHER_ANNOTATIONS.value())) {
-            this.otherAnnotationRetained = Boolean.valueOf(parameters.get(ParachuteAnnotation.CONF_KEEP_OTHER_ANNOTATIONS.value()));
-        }
+    public AnnotationsDescriptor() {
     }
 
-    public boolean isParachuteAnnotationRetained() {
-        return parachuteAnnotationRetained;
+    public List<JavaAnnotation> getAnnotations() {
+        return annotations;
     }
 
-    public boolean isOtherAnnotationRetained() {
-        return otherAnnotationRetained;
+    public void setAnnotations(List<JavaAnnotation> annotations) {
+        this.annotations = annotations;
+    }
+
+    public void addAnnotation(JavaAnnotation annotation) {
+        annotations.add(annotation);
     }
 }
