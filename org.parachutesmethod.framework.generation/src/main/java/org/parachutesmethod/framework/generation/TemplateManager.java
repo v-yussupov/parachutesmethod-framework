@@ -3,6 +3,7 @@ package org.parachutesmethod.framework.generation;
 import freemarker.template.Configuration;
 import freemarker.template.DefaultObjectWrapperBuilder;
 import freemarker.template.Template;
+import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 
 import java.io.*;
@@ -74,7 +75,7 @@ public enum TemplateManager {
      * @throws Exception an exception occurred while loading or processing the template
      */
     public void processTemplateToFile(String templateType, String templateName, Map<String, Object> templateData,
-                                      String filePath) throws Exception {
+                                      String filePath) throws IOException, TemplateException {
         // Resolve the correct template
         Template temp = getTemplate(templateType, templateName);
 

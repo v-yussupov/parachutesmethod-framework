@@ -1,46 +1,28 @@
 package org.parachutesmethod.framework.generation.generators.faas.aws;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
+import freemarker.template.TemplateException;
+import org.parachutesmethod.framework.generation.Constants;
+import org.parachutesmethod.framework.models.java.parachutedescriptors.BundleDescriptor;
+
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.github.javaparser.ast.CompilationUnit;
-import org.apache.maven.model.Build;
-import org.apache.maven.model.Dependency;
-import org.apache.maven.model.Model;
-import org.apache.maven.model.Plugin;
-import org.apache.maven.model.PluginExecution;
-import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
-import org.apache.maven.shared.invoker.DefaultInvocationRequest;
-import org.apache.maven.shared.invoker.DefaultInvoker;
-import org.apache.maven.shared.invoker.InvocationRequest;
-import org.apache.maven.shared.invoker.InvocationResult;
-import org.apache.maven.shared.invoker.Invoker;
-import org.apache.maven.shared.invoker.MavenInvocationException;
-import org.codehaus.plexus.util.xml.Xpp3Dom;
-import org.parachutesmethod.framework.extraction.languages.java.JavaProjectExplorer;
-import org.parachutesmethod.framework.generation.Constants;
-
 public class AWSGenerator {
 
-    public static void generate(Path path, List<JavaProjectExplorer> parachuteProjectExplorers) throws IOException {
+    public static void generate(Path path, List<BundleDescriptor> parachuteDescriptors) throws IOException {
         Path bundlesDir = path.getParent().resolve(Constants.DEPLOYMENT_BUNDLES_FOLDER);
         Files.createDirectories(bundlesDir);
         Map<String, String> resourcePaths = new HashMap<>();
 
-        parachuteProjectExplorers.forEach(e -> {
+        parachuteDescriptors.forEach(descriptor -> {
+            resourcePaths.put(descriptor.getParachuteName(), descriptor.getEndpointPath());
+        });
+
+        /*parachuteProjectExplorers.forEach(e -> {
             try {
                 String parachuteName = e.getProjectPath().getFileName().toString();
                 Path parachuteDir = bundlesDir.resolve(parachuteName);
@@ -136,15 +118,8 @@ public class AWSGenerator {
                 e1.printStackTrace();
             }
         });
-
-        Path parachuteDir = bundlesDir.resolve("router-configurations");
-        Files.createDirectory(parachuteDir);
-        Map<String, String> routerConfigurations = null;
-        try {
-            routerConfigurations = NginxRouterGenerator.generateNginxRouterConfigurationFiles(parachuteDir.toString(), resourcePaths);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+*/
+        Map<String, String> routerConfigurations = generateRouterConfiguration(bundlesDir, resourcePaths);
 
         Path cloudFormationTemplatesDir = bundlesDir.resolve("deployment-models");
         Files.createDirectory(cloudFormationTemplatesDir);
@@ -153,5 +128,17 @@ public class AWSGenerator {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static Map<String, String> generateRouterConfiguration(Path bundlesDir, Map<String, String> parachuteURIs) {
+        Map<String, String> routerConfigurations = new HashMap<>();
+        Path parachuteDir = bundlesDir.resolve("router-configurations");
+        try {
+            Files.createDirectory(parachuteDir);
+            routerConfigurations = NginxRouterGenerator.generateNginxRouterConfigurationFiles(parachuteDir.toString(), parachuteURIs);
+        } catch (TemplateException | IOException e) {
+            e.printStackTrace();
+        }
+        return routerConfigurations;
     }
 }

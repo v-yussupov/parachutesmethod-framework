@@ -73,9 +73,8 @@ public class MainResource {
     public Response generateParachute(@ApiParam(name = "path", required = true) @FormParam("path") String path,
                                       @ApiParam(name = "provider", required = true) @FormParam("provider") String provider) {
         try {
-            ParachuteGenerator gen = new ParachuteGenerator(path, provider);
-            gen.parseParachuteProject();
-            gen.generateParachuteBundles();
+            ParachuteGenerator generator = new ParachuteGenerator(path, provider);
+            generator.generate();
 
             return Response.ok().build();
         } catch (IOException e) {

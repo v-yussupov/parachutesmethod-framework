@@ -1,8 +1,10 @@
 package org.parachutesmethod.framework.generation.generators.faas.aws;
 
+import freemarker.template.TemplateException;
 import org.parachutesmethod.framework.generation.Constants;
 import org.parachutesmethod.framework.generation.TemplateManager;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -20,7 +22,7 @@ public class NginxRouterGenerator {
      * @throws Exception an exception occurred while generating nginx configuration files
      */
     public static Map<String, String> generateNginxRouterConfigurationFiles(String resultPath,
-    Map<String, String> parachuteURIs) throws Exception {
+    Map<String, String> parachuteURIs) throws IOException, TemplateException {
         Path targetLocation = Paths.get(resultPath);
         Files.createDirectories(targetLocation);
 

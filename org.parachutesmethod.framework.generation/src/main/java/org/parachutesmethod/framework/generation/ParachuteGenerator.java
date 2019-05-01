@@ -24,6 +24,7 @@ public class ParachuteGenerator {
 
     private Path path;
     private SupportedCloudProvider provider;
+    private List<BundleDescriptor> parachuteDescriptors = new ArrayList<>();
     private List<JavaProjectExplorer> parachuteProjectExplorers = new ArrayList<>();
 
     public ParachuteGenerator(String path, String provider) {
@@ -31,12 +32,16 @@ public class ParachuteGenerator {
         this.provider = SupportedCloudProvider.getValue(provider);
     }
 
-    public void parseParachuteProject() throws IOException {
+    public void generate() throws IOException {
+        deserializeBundleDescriptors();
+        generateParachuteBundles();
+    }
+
+    public void deserializeBundleDescriptors() throws IOException {
         List<Path> parachuteProjectDirectories = Files.list(path)
                 .filter(Files::isDirectory)
                 .collect(Collectors.toList());
 
-        List<BundleDescriptor> parachuteDescriptors = new ArrayList<>();
         parachuteProjectDirectories.forEach(dir -> {
             Path descriptorPath = dir.resolve(ExtractionSetting.BUNDLE_SPECFILE_NAME.value().concat(FileExtension.JSON.extension()));
 
@@ -48,7 +53,9 @@ public class ParachuteGenerator {
                 e.printStackTrace();
             }
         });
+    }
 
+    public void generateParachuteBundles() throws IOException {
         parachuteDescriptors.forEach(descriptor -> {
             SupportedLanguage language = provider.checkSupport(descriptor.getProgrammingLanguage());
             if (Objects.nonNull(language)) {
@@ -72,10 +79,8 @@ public class ParachuteGenerator {
                 }
             }
         });
-    }
 
-    public void generateParachuteBundles() throws IOException {
-        AWSGenerator.generate(path, parachuteProjectExplorers);
+        AWSGenerator.generate(path, parachuteDescriptors);
     }
 
     public Path getPath() {
