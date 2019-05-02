@@ -1,4 +1,4 @@
-package org.parachutesmethod.framework.generation.generators.faas.aws;
+package org.parachutesmethod.framework.generation.generators.routers;
 
 import freemarker.template.TemplateException;
 import org.parachutesmethod.framework.generation.Constants;

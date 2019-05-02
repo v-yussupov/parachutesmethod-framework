@@ -22,6 +22,7 @@ import org.parachutesmethod.framework.extraction.languages.ProjectCodeExplorer;
 import org.parachutesmethod.framework.extraction.languages.SupportedLanguage;
 import org.parachutesmethod.framework.extraction.languages.java.visitors.ClassOrInterfaceDeclarationCollector;
 import org.parachutesmethod.framework.extraction.languages.java.visitors.ImportDeclarationCollector;
+import org.parachutesmethod.framework.models.java.JavaConfiguration;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaClass;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaImport;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaInterface;
@@ -59,7 +60,7 @@ public class JavaProjectExplorer extends ProjectCodeExplorer {
 
         combinedTypeSolver = new CombinedTypeSolver(
                 new ReflectionTypeSolver(),
-                new JavaParserTypeSolver(projectPath.resolve("src/main/java").toFile())
+                new JavaParserTypeSolver(projectPath.resolve(JavaConfiguration.JAVA_PROJECT_FILES_PATH.value()).toFile())
         );
 
         JavaSymbolSolver symbolSolver = new JavaSymbolSolver(combinedTypeSolver);

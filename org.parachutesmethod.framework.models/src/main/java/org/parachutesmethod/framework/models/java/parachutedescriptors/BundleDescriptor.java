@@ -17,7 +17,7 @@ public class BundleDescriptor {
 
     private List<String> imports = new ArrayList<>();
     private AnnotationsDescriptor parachuteAnnotations;
-    private String methodBody;
+    private String parachuteContainingClass;
     private List<ParachuteInputType> inputTypes = new ArrayList<>();
     private ParachuteOutputType outputType;
     private BuildScriptDescriptor buildScript;
@@ -147,12 +147,12 @@ public class BundleDescriptor {
         this.outputType = outputType;
     }
 
-    public String getMethodBody() {
-        return methodBody;
+    public String getParachuteContainingClass() {
+        return parachuteContainingClass;
     }
 
-    public void setMethodBody(String methodBody) {
-        this.methodBody = methodBody;
+    public void setParachuteContainingClass(String parachuteContainingClass) {
+        this.parachuteContainingClass = parachuteContainingClass;
     }
 
     public String getEndpointPath() {

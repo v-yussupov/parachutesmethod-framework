@@ -73,10 +73,6 @@ public class JavaClass extends AbstractDeclarationContainer<ClassOrInterfaceDecl
         }
     }
 
-    public ClassOrInterfaceDeclaration getClassDeclaration() {
-        return declaration;
-    }
-
     List<JavaMethod> getMethods() {
         return methods;
     }

@@ -1,4 +1,4 @@
-package org.parachutesmethod.framework.generation.generators.faas.aws;
+package org.parachutesmethod.framework.generation.generators.aws;
 
 import org.parachutesmethod.framework.generation.Constants;
 import org.parachutesmethod.framework.generation.TemplateManager;

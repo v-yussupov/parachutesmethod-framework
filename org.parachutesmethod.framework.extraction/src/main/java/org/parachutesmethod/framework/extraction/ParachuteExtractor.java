@@ -1,6 +1,7 @@
 package org.parachutesmethod.framework.extraction;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
 import com.github.javaparser.resolution.types.ResolvedType;
 import org.apache.maven.model.Dependency;
@@ -159,7 +160,10 @@ public class ParachuteExtractor<T> {
             // instantiate the parachute descriptor
             BundleDescriptor descriptor = new BundleDescriptor(SupportedLanguage.JAVA.getName(), parachuteMethod.getName(), parachuteMethod.getParentFile().getPackageName());
             parachuteMethod.getParentFile().getImports().forEach(i -> descriptor.addImport(i.getImportDeclaration().toString()));
-            descriptor.setMethodBody(parachuteMethod.getMethodDeclaration().toString());
+
+            String containingClass = prepareContainingClass(parachuteMethod);
+            descriptor.setParachuteContainingClass(containingClass);
+
             descriptor.setEndpointPath(parachuteMethod.getResourcePath());
 
             AnnotationsDescriptor annotationsDescriptor = new AnnotationsDescriptor();
@@ -185,6 +189,10 @@ public class ParachuteExtractor<T> {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private String prepareContainingClass(JavaMethod parachuteMethod) {
+        return parachuteMethod.getParentClass().getDeclaration().toString();
     }
 
     private Model prepareParachuteMavenScript(JavaProjectExplorer explorer, BundleDescriptor descriptor) {
@@ -236,7 +244,7 @@ public class ParachuteExtractor<T> {
                         .filter(c -> c.getFullClassName().equals(resolvedParameter.getType().asReferenceType().getQualifiedName()))
                         .findFirst();
                 matchingProjectClass.ifPresent(javaClass -> {
-                    inputType.setTypeBody(javaClass.getClassDeclaration().toString());
+                    inputType.setTypeBody(javaClass.getDeclaration().toString());
 
                     //resolve input type dependencies
                     resolveTypeDependencies(explorer, javaClass, descriptor);
@@ -261,7 +269,7 @@ public class ParachuteExtractor<T> {
                     .filter(c -> c.getFullClassName().equals(resolvedType.asReferenceType().getQualifiedName()))
                     .findFirst();
             matchingProjectClass.ifPresent(javaClass -> {
-                outputType.setTypeBody(javaClass.getClassDeclaration().toString());
+                outputType.setTypeBody(javaClass.getDeclaration().toString());
 
                 //resolve input type dependencies
                 resolveTypeDependencies(explorer, javaClass, descriptor);
