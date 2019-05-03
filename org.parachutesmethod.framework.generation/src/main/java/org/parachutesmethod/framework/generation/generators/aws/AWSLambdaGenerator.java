@@ -1,21 +1,5 @@
 package org.parachutesmethod.framework.generation.generators.aws;
 
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
@@ -30,6 +14,12 @@ import org.apache.maven.model.Plugin;
 import org.apache.maven.model.PluginExecution;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.apache.maven.model.io.xpp3.MavenXpp3Writer;
+import org.apache.maven.shared.invoker.DefaultInvocationRequest;
+import org.apache.maven.shared.invoker.DefaultInvoker;
+import org.apache.maven.shared.invoker.InvocationRequest;
+import org.apache.maven.shared.invoker.InvocationResult;
+import org.apache.maven.shared.invoker.Invoker;
+import org.apache.maven.shared.invoker.MavenInvocationException;
 import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
 import org.parachutesmethod.framework.common.BuildScript;
@@ -42,6 +32,24 @@ import org.parachutesmethod.framework.models.java.parachutedescriptors.BundleDes
 import org.parachutesmethod.framework.models.java.parachutedescriptors.ParachuteTypeDependency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class AWSLambdaGenerator {
     private static Logger LOGGER = LoggerFactory.getLogger(AWSLambdaGenerator.class);
@@ -66,7 +74,7 @@ public class AWSLambdaGenerator {
 
                         generateJavaLambda(parachuteJavaProjectDir, descriptor);
                         generateAWSCompliantJavaBuildScript(parachuteJavaProjectDir, descriptor);
-                        runJavaBuildScript();
+                        runJavaBuildScript(parachuteJavaProjectDir);
 
                         resourcePaths.put(descriptor.getParachuteName(), descriptor.getEndpointPath());
                     }
@@ -115,22 +123,6 @@ public class AWSLambdaGenerator {
 
         descriptor.getInputTypes().forEach(inputType -> generateIOTypes(parachuteProjectDir, inputType));
         generateIOTypes(parachuteProjectDir, descriptor.getReturnType());
-
-        //e.getProjectFiles().forEach(f -> {
-        // dependency classes
-            /*else {
-                Path additional = parachuteProjectDir.resolve(f.getFileName());
-                try {
-                    Files.createFile(additional);
-                    try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(additional.toFile()), StandardCharsets.UTF_8))) {
-                        writer.write(f.getParsedFile().toString());
-                    }
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }*/
-        //});
-
     }
 
     private static void generateIOTypes(Path parachuteProjectDir, ParachuteTypeDependency t) {
@@ -191,24 +183,22 @@ public class AWSLambdaGenerator {
         }
     }
 
-    private static void runJavaBuildScript() {
-        /*
+    private static void runJavaBuildScript(Path parachuteJavaProjectDir) {
+        Path pom = parachuteJavaProjectDir.resolve(BuildScript.MAVEN.value());
         InvocationRequest request = new DefaultInvocationRequest();
-                request.setPomFile(pom.toFile());
-                request.setGoals(Arrays.asList("clean", "package"));
+        request.setPomFile(pom.toFile());
+        request.setGoals(Arrays.asList("clean", "package"));
 
-                Invoker invoker = new DefaultInvoker();
-                invoker.setMavenHome(new File(System.getenv("M2_HOME")));
-                try {
-
-                    InvocationResult result = invoker.execute(request);
-                    if (result.getExitCode() != 0) {
-                        throw new IllegalStateException("Build failed.");
-                    }
-                } catch (MavenInvocationException ex) {
-                    ex.printStackTrace();
-                }
-                */
+        Invoker invoker = new DefaultInvoker();
+        invoker.setMavenHome(new File(System.getenv("M2_HOME")));
+        try {
+            InvocationResult result = invoker.execute(request);
+            if (result.getExitCode() != 0) {
+                throw new IllegalStateException("Build failed.");
+            }
+        } catch (MavenInvocationException ex) {
+            ex.printStackTrace();
+        }
     }
 
     private static Map<String, String> generateRouterConfiguration(Path bundlesDir, Map<String, String> parachuteURIs) {
@@ -224,18 +214,19 @@ public class AWSLambdaGenerator {
     }
 
     private void draftMethod() {
-        /*parachuteProjectDirectories.forEach(parachuteProjectFolder -> {
-                        try {
-                            LOGGER.info("Parsing parachute project name: " + parachuteProjectFolder.getFileName().toString());
-                            JavaProjectExplorer explorer = new JavaProjectExplorer(parachuteProjectFolder);
-                            parachuteProjectExplorers.add(explorer);
-
-                            String mainClass = parachuteProjectFolder.getFileName().toString();
-                            explorer.getProjectClassByName(mainClass);
-                            LOGGER.info("parsedPrimaryFile:" + explorer.getProjectClassByName(mainClass).getClassDeclaration());
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    });*/
+        //e.getProjectFiles().forEach(f -> {
+        // dependency classes
+            /*else {
+                Path additional = parachuteProjectDir.resolve(f.getFileName());
+                try {
+                    Files.createFile(additional);
+                    try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(additional.toFile()), StandardCharsets.UTF_8))) {
+                        writer.write(f.getParsedFile().toString());
+                    }
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+            }*/
+        //});
     }
 }

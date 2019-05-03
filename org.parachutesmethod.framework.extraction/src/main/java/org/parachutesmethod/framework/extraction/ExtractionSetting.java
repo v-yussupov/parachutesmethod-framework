@@ -2,8 +2,8 @@ package org.parachutesmethod.framework.extraction;
 
 public enum ExtractionSetting {
     SOURCE_PROJECT_FOLDER("source"),
-    GENERATION_BUNDLES_FOLDER("parachute-generation-bundles"),
-    BUNDLE_SPECFILE_NAME("parachute-descriptor");
+    GENERATION_BUNDLES_FOLDER("parachute-descriptors"),
+    BUNDLE_SPECFILE_NAME("descriptor");
 
     private String value;
 

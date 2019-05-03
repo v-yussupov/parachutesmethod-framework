@@ -1,23 +1,5 @@
 package org.parachutesmethod.framework.extraction;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
 import com.github.javaparser.resolution.types.ResolvedType;
@@ -46,6 +28,24 @@ import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
 import org.parachutesmethod.framework.models.java.projectmodel.MavenProjectObjectModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 public class ParachuteExtractor<T> {
 
@@ -254,21 +254,27 @@ public class ParachuteExtractor<T> {
     private void resolveReturnType(JavaProjectExplorer explorer, JavaMethod parachuteMethod, BundleDescriptor descriptor) {
         if (!parachuteMethod.getReturnType().isPrimitiveType()) {
             ResolvedType resolvedType = parachuteMethod.getReturnType().resolve();
-            LOGGER.info(resolvedType.asReferenceType().getQualifiedName());
-            ParachuteReturnType outputType = new ParachuteReturnType(true, resolvedType.asReferenceType().getQualifiedName());
+            if (resolvedType.isReferenceType()) {
+                LOGGER.info("Return type is a reference type with the name: " + resolvedType.asReferenceType().getQualifiedName());
+                ParachuteReturnType outputType = new ParachuteReturnType(true, resolvedType.asReferenceType().getQualifiedName());
 
-            Optional<JavaClass> matchingProjectClass = explorer.getProjectClasses()
-                    .stream()
-                    .filter(c -> c.getFullClassName().equals(resolvedType.asReferenceType().getQualifiedName()))
-                    .findFirst();
-            matchingProjectClass.ifPresent(javaClass -> {
-                outputType.setTypeBody(javaClass.getDeclaration().toString());
+                Optional<JavaClass> matchingProjectClass = explorer.getProjectClasses()
+                        .stream()
+                        .filter(c -> c.getFullClassName().equals(resolvedType.asReferenceType().getQualifiedName()))
+                        .findFirst();
+                matchingProjectClass.ifPresent(javaClass -> {
+                    outputType.setTypeBody(javaClass.getDeclaration().toString());
 
-                //resolve input type dependencies
-                resolveTypeDependencies(explorer, javaClass, descriptor);
-            });
+                    //resolve input type dependencies
+                    resolveTypeDependencies(explorer, javaClass, descriptor);
+                });
 
-            descriptor.setReturnType(outputType);
+                descriptor.setReturnType(outputType);
+            } else if (resolvedType.isArray()) {
+                LOGGER.info(resolvedType.asArrayType().describe());
+                ParachuteReturnType outputType = new ParachuteReturnType(true, resolvedType.asArrayType().describe());
+                descriptor.setReturnType(outputType);
+            }
         } else {
             descriptor.setReturnType(new ParachuteReturnType(false, parachuteMethod.getReturnType().toString()));
         }
