@@ -1,29 +1,26 @@
 package org.parachutesmethod.framework.models.java.parachutedescriptors;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.NodeList;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaImport;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class BundleDescriptor {
     private String programmingLanguage;
     private String parachuteName;
     private String packageName;
     private String endpointPath;
-    //private JavaMethod parachuteMethodData;
 
     private List<String> imports = new ArrayList<>();
     private AnnotationsDescriptor parachuteAnnotations;
     private String parachuteContainingClass;
+    private String parqachuteMethodDeclaration;
     private List<ParachuteInputType> inputTypes = new ArrayList<>();
-    private ParachuteOutputType outputType;
+    private ParachuteReturnType returnType;
     private BuildScriptDescriptor buildScript;
-
-    //private CompilationUnit preparedParachute;
-    //private int retainedAnnotationsCount = 0;
 
     public BundleDescriptor() {
     }
@@ -34,8 +31,15 @@ public class BundleDescriptor {
         this.packageName = packageName;
     }
 
+    private void setImports(CompilationUnit cu, List<JavaImport> javaImports) {
+        NodeList<ImportDeclaration> imports = new NodeList<>();
+        javaImports.forEach(i -> imports.add(i.getImportDeclaration()));
+        cu.setImports(imports);
+    }
+
     private void prepareParachute() {
-        /*preparedParachute = new CompilationUnit();
+        /*
+        preparedParachute = new CompilationUnit();
         parachuteMethodData.getParachuteAnnotation()
                 .ifPresent(javaAnnotation ->
                         parachuteAnnotations = new AnnotationsDescriptor(
@@ -45,17 +49,13 @@ public class BundleDescriptor {
 
         preparedParachute.setPackageDeclaration(JavaConfiguration.EXTRACTED_PARACHUTE_PACKAGE_NAME.value());
         setImports(preparedParachute, parachuteMethodData.getParentFile().getImports());
-        constructClassWithParachute();*/
-    }
-
-    private void setImports(CompilationUnit cu, List<JavaImport> javaImports) {
-        NodeList<ImportDeclaration> imports = new NodeList<>();
-        javaImports.forEach(i -> imports.add(i.getImportDeclaration()));
-        cu.setImports(imports);
+        constructClassWithParachute();
+        */
     }
 
     private void constructClassWithParachute() {
-        /*ClassOrInterfaceDeclaration classDeclaration = preparedParachute.addClass(parachuteName);
+        /*
+        ClassOrInterfaceDeclaration classDeclaration = preparedParachute.addClass(parachuteName);
 
         MethodDeclaration md = parachuteMethodData.getMethodDeclaration();
         if (Objects.nonNull(parachuteAnnotations)) {
@@ -76,12 +76,9 @@ public class BundleDescriptor {
             md.setAnnotations(new NodeList<>());
         }
 
-        classDeclaration.getMembers().add(md);*/
+        classDeclaration.getMembers().add(md);
+        */
     }
-
-    /*public CompilationUnit getPreparedParachute() {
-        return preparedParachute;
-    }*/
 
     public String getProgrammingLanguage() {
         return programmingLanguage;
@@ -139,12 +136,12 @@ public class BundleDescriptor {
         inputTypes.add(inputType);
     }
 
-    public ParachuteOutputType getOutputType() {
-        return outputType;
+    public ParachuteReturnType getReturnType() {
+        return returnType;
     }
 
-    public void setOutputType(ParachuteOutputType outputType) {
-        this.outputType = outputType;
+    public void setReturnType(ParachuteReturnType returnType) {
+        this.returnType = returnType;
     }
 
     public String getParachuteContainingClass() {
@@ -153,6 +150,14 @@ public class BundleDescriptor {
 
     public void setParachuteContainingClass(String parachuteContainingClass) {
         this.parachuteContainingClass = parachuteContainingClass;
+    }
+
+    public String getParqachuteMethodDeclaration() {
+        return parqachuteMethodDeclaration;
+    }
+
+    public void setParqachuteMethodDeclaration(String parqachuteMethodDeclaration) {
+        this.parqachuteMethodDeclaration = parqachuteMethodDeclaration;
     }
 
     public String getEndpointPath() {
@@ -170,5 +175,4 @@ public class BundleDescriptor {
     public void setBuildScript(BuildScriptDescriptor buildScript) {
         this.buildScript = buildScript;
     }
-
 }

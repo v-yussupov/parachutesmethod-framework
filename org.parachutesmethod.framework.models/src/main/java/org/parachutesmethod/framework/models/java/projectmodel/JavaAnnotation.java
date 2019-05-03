@@ -1,19 +1,21 @@
 package org.parachutesmethod.framework.models.java.projectmodel;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
+import com.github.javaparser.resolution.declarations.ResolvedAnnotationDeclaration;
 import org.parachutesmethod.framework.models.java.JavaConfiguration;
 
-import java.util.HashMap;
-import java.util.Map;
-
-@JsonIgnoreProperties({"annotationExpression"})
+@JsonIgnoreProperties( {"annotationExpression"})
 public class JavaAnnotation {
     private String name;
-    private String annotationExpressionAsString;
+    private String annotationExpressionString;
+    private String className;
     private AnnotationExpr annotationExpression;
     private boolean markerAnnotation;
     private boolean parachuteAnnotation;
@@ -24,7 +26,7 @@ public class JavaAnnotation {
     }
 
     public JavaAnnotation(AnnotationExpr annotationExpression) {
-        this.annotationExpressionAsString = annotationExpression.toString();
+        this.annotationExpressionString = annotationExpression.toString();
         this.annotationExpression = annotationExpression;
         this.name = annotationExpression.getNameAsString();
 
@@ -40,7 +42,12 @@ public class JavaAnnotation {
         }
         if (JavaConfiguration.PARACHUTE_METHOD_ANNOTATION.value().equals(annotationExpression.getNameAsString())) {
             parachuteAnnotation = true;
+        } else {
+            // do not resolve parachute annotations
+            ResolvedAnnotationDeclaration ra = annotationExpression.resolve();
+            this.className = ra.getQualifiedName();
         }
+
         if (this.getName().equals(JavaConfiguration.PATH_ANNOTATION.value())) {
             pathAnnotation = true;
         }
@@ -54,12 +61,20 @@ public class JavaAnnotation {
         this.name = name;
     }
 
-    public String getAnnotationExpressionAsString() {
-        return annotationExpressionAsString;
+    public String getAnnotationExpressionString() {
+        return annotationExpressionString;
     }
 
-    public void setAnnotationExpressionAsString(String annotationExpressionAsString) {
-        this.annotationExpressionAsString = annotationExpressionAsString;
+    public void setAnnotationExpressionString(String annotationExpressionString) {
+        this.annotationExpressionString = annotationExpressionString;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
     }
 
     public AnnotationExpr getAnnotationExpression() {

@@ -11,7 +11,6 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.type.Type;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.parachutesmethod.framework.models.java.JavaConfiguration;
@@ -39,7 +38,7 @@ public class JavaMethod {
         this.parentFile = parent;
         this.parentClass = parentClass;
         this.methodDeclaration = methodDeclaration;
-        this.name = StringUtils.capitalize(methodDeclaration.getNameAsString());
+        this.name = methodDeclaration.getNameAsString();
         this.annotations = new ArrayList<>();
         findAnnotations();
 

@@ -1,7 +1,24 @@
 package org.parachutesmethod.framework.extraction;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
 import com.github.javaparser.resolution.types.ResolvedType;
 import org.apache.maven.model.Dependency;
@@ -23,30 +40,12 @@ import org.parachutesmethod.framework.models.java.parachutedescriptors.Annotatio
 import org.parachutesmethod.framework.models.java.parachutedescriptors.BuildScriptDescriptor;
 import org.parachutesmethod.framework.models.java.parachutedescriptors.BundleDescriptor;
 import org.parachutesmethod.framework.models.java.parachutedescriptors.ParachuteInputType;
-import org.parachutesmethod.framework.models.java.parachutedescriptors.ParachuteOutputType;
+import org.parachutesmethod.framework.models.java.parachutedescriptors.ParachuteReturnType;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaClass;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
 import org.parachutesmethod.framework.models.java.projectmodel.MavenProjectObjectModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 
 public class ParachuteExtractor<T> {
 
@@ -160,10 +159,8 @@ public class ParachuteExtractor<T> {
             // instantiate the parachute descriptor
             BundleDescriptor descriptor = new BundleDescriptor(SupportedLanguage.JAVA.getName(), parachuteMethod.getName(), parachuteMethod.getParentFile().getPackageName());
             parachuteMethod.getParentFile().getImports().forEach(i -> descriptor.addImport(i.getImportDeclaration().toString()));
-
-            String containingClass = prepareContainingClass(parachuteMethod);
-            descriptor.setParachuteContainingClass(containingClass);
-
+            descriptor.setParachuteContainingClass(parachuteMethod.getParentClass().getDeclaration().toString());
+            descriptor.setParqachuteMethodDeclaration(parachuteMethod.getMethodDeclaration().toString());
             descriptor.setEndpointPath(parachuteMethod.getResourcePath());
 
             AnnotationsDescriptor annotationsDescriptor = new AnnotationsDescriptor();
@@ -189,10 +186,6 @@ public class ParachuteExtractor<T> {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private String prepareContainingClass(JavaMethod parachuteMethod) {
-        return parachuteMethod.getParentClass().getDeclaration().toString();
     }
 
     private Model prepareParachuteMavenScript(JavaProjectExplorer explorer, BundleDescriptor descriptor) {
@@ -245,10 +238,10 @@ public class ParachuteExtractor<T> {
                         .findFirst();
                 matchingProjectClass.ifPresent(javaClass -> {
                     inputType.setTypeBody(javaClass.getDeclaration().toString());
+                    javaClass.getContainingFile().getImports().forEach(i -> inputType.addImport(i.getImportDeclaration().toString()));
 
                     //resolve input type dependencies
                     resolveTypeDependencies(explorer, javaClass, descriptor);
-
                 });
 
                 descriptor.addInputType(inputType);
@@ -262,7 +255,7 @@ public class ParachuteExtractor<T> {
         if (!parachuteMethod.getReturnType().isPrimitiveType()) {
             ResolvedType resolvedType = parachuteMethod.getReturnType().resolve();
             LOGGER.info(resolvedType.asReferenceType().getQualifiedName());
-            ParachuteOutputType outputType = new ParachuteOutputType(true, resolvedType.asReferenceType().getQualifiedName());
+            ParachuteReturnType outputType = new ParachuteReturnType(true, resolvedType.asReferenceType().getQualifiedName());
 
             Optional<JavaClass> matchingProjectClass = explorer.getProjectClasses()
                     .stream()
@@ -275,9 +268,9 @@ public class ParachuteExtractor<T> {
                 resolveTypeDependencies(explorer, javaClass, descriptor);
             });
 
-            descriptor.setOutputType(outputType);
+            descriptor.setReturnType(outputType);
         } else {
-            descriptor.setOutputType(new ParachuteOutputType(false, parachuteMethod.getReturnType().toString()));
+            descriptor.setReturnType(new ParachuteReturnType(false, parachuteMethod.getReturnType().toString()));
         }
     }
 
@@ -333,6 +326,8 @@ public class ParachuteExtractor<T> {
         Files.createFile(dir.resolve(fileName));
         List<JavaClass> dependencyClasses = resolveIOClasses(explorer.getProjectClasses(), parachuteMethod);
         List<JavaClass> staticClasses = new ArrayList<>();
+
+        // write dependency classes together with lambda
         dependencyClasses.forEach(depClass -> {
             String pojoName = depClass.getName().concat(SupportedLanguage.JAVA.getFileExtension());
             try {
@@ -360,6 +355,7 @@ public class ParachuteExtractor<T> {
         if (staticClasses.isEmpty()) {
             writeContentToFile(dir.resolve(fileName).toFile(), descriptor.getPreparedParachute().toString());
         } else {
+            // embed static inner classes
             staticClasses.forEach(sc -> {
                 CompilationUnit cu = descriptor.getPreparedParachute();
                 cu.getType(0).getMembers().add(sc.getClassDeclaration());

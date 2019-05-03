@@ -2,7 +2,7 @@ package org.parachutesmethod.framework.generation;
 
 public class Constants {
     public static final String DEPLOYMENT_BUNDLES_FOLDER = "parachute-deployment-bundles";
-
+    public static final String PARACHUTES_FOLDER = "parachutes";
 
     public static final String AWS_MAVEN_DEP_GROUPID = "com.amazonaws";
     public static final String AWS_MAVEN_DEP_ARTIFACTID = "aws-lambda-java-core";
