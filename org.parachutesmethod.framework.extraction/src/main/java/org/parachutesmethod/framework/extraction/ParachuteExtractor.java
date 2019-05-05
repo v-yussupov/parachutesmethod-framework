@@ -1,7 +1,10 @@
 package org.parachutesmethod.framework.extraction;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.javaparser.ast.expr.MethodCallExpr;
+import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.types.ResolvedType;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
@@ -17,12 +20,14 @@ import org.parachutesmethod.framework.extraction.exceptions.ProjectParsingExcept
 import org.parachutesmethod.framework.extraction.exceptions.WrongRepositoryException;
 import org.parachutesmethod.framework.extraction.languages.SupportedLanguage;
 import org.parachutesmethod.framework.extraction.languages.java.JavaProjectExplorer;
+import org.parachutesmethod.framework.extraction.languages.java.visitors.MethodCallExprCollector;
 import org.parachutesmethod.framework.models.java.JavaConfiguration;
 import org.parachutesmethod.framework.models.java.parachutedescriptors.AnnotationsDescriptor;
 import org.parachutesmethod.framework.models.java.parachutedescriptors.BuildScriptDescriptor;
 import org.parachutesmethod.framework.models.java.parachutedescriptors.BundleDescriptor;
 import org.parachutesmethod.framework.models.java.parachutedescriptors.ParachuteInputType;
 import org.parachutesmethod.framework.models.java.parachutedescriptors.ParachuteReturnType;
+import org.parachutesmethod.framework.models.java.parachutedescriptors.ParachuteTypeDependency;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaClass;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
 import org.parachutesmethod.framework.models.java.projectmodel.MavenProjectObjectModel;
@@ -160,7 +165,7 @@ public class ParachuteExtractor<T> {
             BundleDescriptor descriptor = new BundleDescriptor(SupportedLanguage.JAVA.getName(), parachuteMethod.getName(), parachuteMethod.getParentFile().getPackageName());
             parachuteMethod.getParentFile().getImports().forEach(i -> descriptor.addImport(i.getImportDeclaration().toString()));
             descriptor.setParachuteContainingClass(parachuteMethod.getParentClass().getDeclaration().toString());
-            descriptor.setParqachuteMethodDeclaration(parachuteMethod.getMethodDeclaration().toString());
+            descriptor.setParachuteMethodDeclaration(parachuteMethod.getMethodDeclaration().toString());
             descriptor.setEndpointPath(parachuteMethod.getResourcePath());
 
             AnnotationsDescriptor annotationsDescriptor = new AnnotationsDescriptor();
@@ -170,8 +175,11 @@ public class ParachuteExtractor<T> {
             resolveInputTypes(explorer, parachuteMethod, descriptor);
             resolveReturnType(explorer, parachuteMethod, descriptor);
 
-            // resolve method dependencies
+            // resolve method's type dependencies
             resolveTypeDependencies(explorer, parachuteMethod, descriptor);
+
+            // resolve method's method dependencies
+            resolveMethodDependencies(parachuteMethod, descriptor);
 
             // prepare build script
             Model model = prepareParachuteMavenScript(explorer, descriptor);
@@ -241,7 +249,7 @@ public class ParachuteExtractor<T> {
                     javaClass.getContainingFile().getImports().forEach(i -> inputType.addImport(i.getImportDeclaration().toString()));
 
                     //resolve input type dependencies
-                    resolveTypeDependencies(explorer, javaClass, descriptor);
+                    resolveTypeDependencies(explorer, javaClass, descriptor, inputType);
                 });
 
                 descriptor.addInputType(inputType);
@@ -265,8 +273,8 @@ public class ParachuteExtractor<T> {
                 matchingProjectClass.ifPresent(javaClass -> {
                     outputType.setTypeBody(javaClass.getDeclaration().toString());
 
-                    //resolve input type dependencies
-                    resolveTypeDependencies(explorer, javaClass, descriptor);
+                    //resolve return type dependencies
+                    resolveTypeDependencies(explorer, javaClass, descriptor, outputType);
                 });
 
                 descriptor.setReturnType(outputType);
@@ -281,13 +289,6 @@ public class ParachuteExtractor<T> {
     }
 
     private void resolveTypeDependencies(JavaProjectExplorer explorer, JavaMethod parachuteMethod, BundleDescriptor descriptor) {
-        // naive approach for checking if the class name is mentioned
-        /*projectClasses.forEach(c -> {
-            if (parachuteMethod.getMethodDeclaration().toString().contains(c.getName())) {
-                result.add(c);
-            }
-        });*/
-
         // 1 - resolve all classes used in the method
         // 2 - check if any of them are in the same file => embed in the extracted parachute
         // 3 - check if any of them are in the same package (not reflected in imports) => extract them in the same package as extracted parachute
@@ -295,83 +296,58 @@ public class ParachuteExtractor<T> {
         // now resolve type dependencies for each resolved class
     }
 
-    private void resolveTypeDependencies(JavaProjectExplorer explorer, JavaClass parsedClass, BundleDescriptor descriptor) {
+    private void resolveTypeDependencies(JavaProjectExplorer explorer, JavaClass parsedClass, BundleDescriptor descriptor, ParachuteTypeDependency type) {
         // resolve type dependencies for every method AND class variable
         // recursive
-    }
 
-    private List<JavaClass> resolveIOClasses(Set<JavaClass> projectClasses, JavaMethod parachuteMethod) {
-        List<String> parsedTypes = new ArrayList<>();
+        List<String> fieldRefTypes = new ArrayList<>();
+        ResolvedReferenceTypeDeclaration cd = parsedClass.getDeclaration().resolve();
+        List<ResolvedFieldDeclaration> fields = cd.getAllFields();
+        fields.stream()
+                .filter(f -> f.getType().isReferenceType())
+                .forEach(f -> {
+                    fieldRefTypes.add(f.getType().asReferenceType().getQualifiedName());
+                    resolveCollectionTypes(f.getType(), fieldRefTypes);
+                });
 
-        parachuteMethod.getInputParameters().forEach(p -> {
-            parsedTypes.add(p.getType().asString());
-        });
-        parsedTypes.add(parachuteMethod.getReturnType().asString());
-
-        List<JavaClass> result = new ArrayList<>();
-        for (String name : parsedTypes) {
-            projectClasses.forEach(c -> {
-                if (c.getName().equals(name)) {
-                    result.add(c);
+        if (!fieldRefTypes.isEmpty()) {
+            explorer.getProjectClasses().forEach(c -> {
+                if (fieldRefTypes.contains(c.getFullClassName())) {
+                    ParachuteTypeDependency depType = new ParachuteTypeDependency(true, c.getFullClassName());
+                    depType.setTypeBody(c.getDeclaration().toString());
+                    type.getTypeDependencies().add(depType);
+                    resolveTypeDependencies(explorer, c, descriptor, type);
                 }
             });
         }
-
-        projectClasses.forEach(c -> {
-            if (parachuteMethod.getMethodDeclaration().toString().contains(c.getName())) {
-                result.add(c);
-            }
-        });
-
-        return result;
     }
 
-    private void oldLogicDraft() {
-        /*
-        String fileName = createParachuteFileName(descriptor.getParachuteName());
-        Files.createFile(dir.resolve(fileName));
-        List<JavaClass> dependencyClasses = resolveIOClasses(explorer.getProjectClasses(), parachuteMethod);
-        List<JavaClass> staticClasses = new ArrayList<>();
-
-        // write dependency classes together with lambda
-        dependencyClasses.forEach(depClass -> {
-            String pojoName = depClass.getName().concat(SupportedLanguage.JAVA.getFileExtension());
-            try {
-                if (!depClass.getClassDeclaration().isStatic()) {
-                    //Files.createFile(dir.resolve(pojoName));
-
-                    CompilationUnit cu = new CompilationUnit();
-                    cu.setPackageDeclaration(JavaConfiguration.PARACHUTE_PACKAGE.value());
-
-                    NodeList<ImportDeclaration> imports = new NodeList<>();
-                    depClass.getContainingFile().getImports().forEach(i -> imports.add(i.getImportDeclaration()));
-                    cu.setImports(imports);
-                    cu.addType(depClass.getClassDeclaration());
-
-                    writeContentToFile(dir.resolve(pojoName).toFile(), cu.toString());
-                } else {
-                    staticClasses.add(depClass);
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-
-        // Extract parachute code
-        if (staticClasses.isEmpty()) {
-            writeContentToFile(dir.resolve(fileName).toFile(), descriptor.getPreparedParachute().toString());
-        } else {
-            // embed static inner classes
-            staticClasses.forEach(sc -> {
-                CompilationUnit cu = descriptor.getPreparedParachute();
-                cu.getType(0).getMembers().add(sc.getClassDeclaration());
-                try {
-                    writeContentToFile(dir.resolve(fileName).toFile(), cu.toString());
-                } catch (IOException e) {
-                    e.printStackTrace();
+    private void resolveCollectionTypes(ResolvedType type, List<String> qualifiedNames) {
+        if (!type.asReferenceType().typeParametersValues().isEmpty()) {
+            type.asReferenceType().typeParametersValues().forEach(v -> {
+                if (v.isReference()) {
+                    qualifiedNames.add(v.asReferenceType().getQualifiedName());
+                    resolveCollectionTypes(v, qualifiedNames);
                 }
             });
-        }*/
+        }
+    }
+
+    private void resolveMethodDependencies(JavaMethod parachuteMethod, BundleDescriptor descriptor) {
+        List<MethodCallExpr> methodCalls = new ArrayList<>();
+        List<String> calledMethodNames = new ArrayList<>();
+
+        parachuteMethod.getMethodDeclaration().accept(new MethodCallExprCollector(), methodCalls);
+        methodCalls.forEach(methodCall -> calledMethodNames.add(methodCall.getNameAsString()));
+
+        parachuteMethod.getParentClass()
+                .getDeclaration()
+                .getMethods()
+                .forEach(m -> {
+                    if (calledMethodNames.contains(m.getNameAsString())) {
+                        descriptor.addMethodDependency(m.toString());
+                    }
+                });
     }
 
     private String createParachuteFileName(String parachuteName) {

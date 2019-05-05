@@ -17,7 +17,8 @@ public class BundleDescriptor {
     private List<String> imports = new ArrayList<>();
     private AnnotationsDescriptor parachuteAnnotations;
     private String parachuteContainingClass;
-    private String parqachuteMethodDeclaration;
+    private String parachuteMethodDeclaration;
+    private List<String> sameClassMethodDependencies = new ArrayList<>();
     private List<ParachuteInputType> inputTypes = new ArrayList<>();
     private ParachuteReturnType returnType;
     private BuildScriptDescriptor buildScript;
@@ -81,6 +82,18 @@ public class BundleDescriptor {
         imports.add(importDeclaration);
     }
 
+    public List<String> getSameClassMethodDependencies() {
+        return sameClassMethodDependencies;
+    }
+
+    public void setSameClassMethodDependencies(List<String> sameClassMethodDependencies) {
+        this.sameClassMethodDependencies = sameClassMethodDependencies;
+    }
+
+    public void addMethodDependency(String methodDeclaration) {
+        sameClassMethodDependencies.add(methodDeclaration);
+    }
+
     public List<ParachuteInputType> getInputTypes() {
         return inputTypes;
     }
@@ -109,12 +122,12 @@ public class BundleDescriptor {
         this.parachuteContainingClass = parachuteContainingClass;
     }
 
-    public String getParqachuteMethodDeclaration() {
-        return parqachuteMethodDeclaration;
+    public String getParachuteMethodDeclaration() {
+        return parachuteMethodDeclaration;
     }
 
-    public void setParqachuteMethodDeclaration(String parqachuteMethodDeclaration) {
-        this.parqachuteMethodDeclaration = parqachuteMethodDeclaration;
+    public void setParachuteMethodDeclaration(String parachuteMethodDeclaration) {
+        this.parachuteMethodDeclaration = parachuteMethodDeclaration;
     }
 
     public String getEndpointPath() {

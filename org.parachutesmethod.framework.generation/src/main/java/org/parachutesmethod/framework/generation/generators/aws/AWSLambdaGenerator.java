@@ -111,7 +111,7 @@ public class AWSLambdaGenerator {
         descriptor.getImports().forEach(i -> cu.addImport(JavaParser.parseImport(i)));
 
         ClassOrInterfaceDeclaration containingClass = (ClassOrInterfaceDeclaration) JavaParser.parseTypeDeclaration(descriptor.getParachuteContainingClass());
-        MethodDeclaration parachuteMethod = (MethodDeclaration) JavaParser.parseBodyDeclaration(descriptor.getParqachuteMethodDeclaration());
+        MethodDeclaration parachuteMethod = (MethodDeclaration) JavaParser.parseBodyDeclaration(descriptor.getParachuteMethodDeclaration());
 
         ClassOrInterfaceDeclaration classDeclaration = cu.addClass(StringUtils.capitalize(descriptor.getParachuteName())).setPublic(true);
 
@@ -119,17 +119,23 @@ public class AWSLambdaGenerator {
         parachuteMethod.setAnnotations(new NodeList<>());
         classDeclaration.addMember(parachuteMethod);
 
+        if (!descriptor.getSameClassMethodDependencies().isEmpty()) {
+            descriptor.getSameClassMethodDependencies().forEach(m -> {
+                classDeclaration.addMember(JavaParser.parseBodyDeclaration(m));
+            });
+        }
+
         try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(parachuteFile.toFile()), StandardCharsets.UTF_8))) {
             writer.write(cu.toString());
         } catch (IOException e1) {
             e1.printStackTrace();
         }
 
-        descriptor.getInputTypes().forEach(inputType -> generateIOTypes(parachuteProjectDir, inputType));
-        generateIOTypes(parachuteProjectDir, descriptor.getReturnType());
+        descriptor.getInputTypes().forEach(inputType -> generateTypes(parachuteProjectDir, inputType));
+        generateTypes(parachuteProjectDir, descriptor.getReturnType());
     }
 
-    private static void generateIOTypes(Path parachuteProjectDir, ParachuteTypeDependency t) {
+    private static void generateTypes(Path parachuteProjectDir, ParachuteTypeDependency t) {
         if (Objects.nonNull(t.getTypeBody()) && !t.getTypeBody().isEmpty()) {
             CompilationUnit inputTypeCU = new CompilationUnit();
             inputTypeCU.setPackageDeclaration(JavaConfiguration.PARACHUTE_PACKAGE.value());
@@ -146,6 +152,10 @@ public class AWSLambdaGenerator {
                 }
             } catch (IOException e1) {
                 e1.printStackTrace();
+            }
+
+            if (!t.getTypeDependencies().isEmpty()) {
+                t.getTypeDependencies().forEach(dep -> generateTypes(parachuteProjectDir, dep));
             }
         }
     }

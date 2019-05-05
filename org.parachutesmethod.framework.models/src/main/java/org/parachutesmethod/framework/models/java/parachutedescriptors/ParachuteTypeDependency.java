@@ -8,7 +8,7 @@ public class ParachuteTypeDependency {
     private String typeName;
     private String typeBody;
     private List<String> imports = new ArrayList<>();
-    private List<ParachuteTypeDependency> typeDependencies;
+    private List<ParachuteTypeDependency> typeDependencies = new ArrayList<>();
 
     public ParachuteTypeDependency() {
 
