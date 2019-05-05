@@ -192,8 +192,8 @@ public class ParachuteExtractor<T> {
         Model model = new Model();
         model.setName("parachute-method." + descriptor.getParachuteName().toLowerCase());
         model.setModelVersion("4.0.0");
-        model.setGroupId(JavaConfiguration.EXTRACTED_PARACHUTE_PACKAGE_NAME.value());
-        model.setArtifactId(JavaConfiguration.EXTRACTED_PARACHUTE_PACKAGE_NAME.value().concat("-").concat(descriptor.getParachuteName().toLowerCase()));
+        model.setGroupId(JavaConfiguration.PARACHUTE_PACKAGE.value());
+        model.setArtifactId(JavaConfiguration.PARACHUTE_PACKAGE.value().concat("-").concat(descriptor.getParachuteName().toLowerCase()));
         model.setVersion("1.0-SNAPSHOT");
 
         Set<Dependency> dependencies = new HashSet<>();
@@ -341,7 +341,7 @@ public class ParachuteExtractor<T> {
                     //Files.createFile(dir.resolve(pojoName));
 
                     CompilationUnit cu = new CompilationUnit();
-                    cu.setPackageDeclaration(JavaConfiguration.EXTRACTED_PARACHUTE_PACKAGE_NAME.value());
+                    cu.setPackageDeclaration(JavaConfiguration.PARACHUTE_PACKAGE.value());
 
                     NodeList<ImportDeclaration> imports = new NodeList<>();
                     depClass.getContainingFile().getImports().forEach(i -> imports.add(i.getImportDeclaration()));

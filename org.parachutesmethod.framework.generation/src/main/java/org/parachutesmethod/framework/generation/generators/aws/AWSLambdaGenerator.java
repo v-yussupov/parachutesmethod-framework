@@ -64,7 +64,11 @@ public class AWSLambdaGenerator {
         parachuteDescriptors.forEach(descriptor -> {
             try {
                 Path parachuteDir = parachutesDir.resolve(descriptor.getParachuteName().toLowerCase());
-                Path parachuteJavaProjectDir = Paths.get(parachuteDir.toString(), "/src/main/java/org/parachutesmethod/extractedparachutes");
+                Path parachuteJavaProjectDir = Paths.get(
+                        parachuteDir.toString(),
+                        JavaConfiguration.JAVA_PROJECT_FILES_PATH.value(),
+                        JavaConfiguration.PARACHUTE_PACKAGE.value().replace(".", "/")
+                );
                 Files.createDirectory(parachuteDir);
                 Files.createDirectories(parachuteJavaProjectDir);
 
@@ -100,7 +104,7 @@ public class AWSLambdaGenerator {
         Files.createFile(parachuteFile);
 
         CompilationUnit cu = new CompilationUnit();
-        cu.setPackageDeclaration(JavaConfiguration.EXTRACTED_PARACHUTE_PACKAGE_NAME.value());
+        cu.setPackageDeclaration(JavaConfiguration.PARACHUTE_PACKAGE.value());
 
         cu.addImport(Constants.AWS_IMPORT_CONTEXT_OBJECT);
         cu.addImport(Constants.AWS_IMPORT_LAMBDA_LOGGER);
@@ -128,7 +132,7 @@ public class AWSLambdaGenerator {
     private static void generateIOTypes(Path parachuteProjectDir, ParachuteTypeDependency t) {
         if (Objects.nonNull(t.getTypeBody()) && !t.getTypeBody().isEmpty()) {
             CompilationUnit inputTypeCU = new CompilationUnit();
-            inputTypeCU.setPackageDeclaration(JavaConfiguration.EXTRACTED_PARACHUTE_PACKAGE_NAME.value());
+            inputTypeCU.setPackageDeclaration(JavaConfiguration.PARACHUTE_PACKAGE.value());
             ClassOrInterfaceDeclaration inputClassDeclaration = (ClassOrInterfaceDeclaration) JavaParser.parseTypeDeclaration(t.getTypeBody());
 
             inputTypeCU.addType(inputClassDeclaration);
