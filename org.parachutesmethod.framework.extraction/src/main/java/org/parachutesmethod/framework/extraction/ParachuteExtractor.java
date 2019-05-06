@@ -1,5 +1,23 @@
 package org.parachutesmethod.framework.extraction;
 
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
@@ -33,24 +51,6 @@ import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
 import org.parachutesmethod.framework.models.java.projectmodel.MavenProjectObjectModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
 
 public class ParachuteExtractor<T> {
 
@@ -165,6 +165,7 @@ public class ParachuteExtractor<T> {
             BundleDescriptor descriptor = new BundleDescriptor(SupportedLanguage.JAVA.getName(), parachuteMethod.getName(), parachuteMethod.getParentFile().getPackageName());
             parachuteMethod.getParentFile().getImports().forEach(i -> descriptor.addImport(i.getImportDeclaration().toString()));
             descriptor.setParachuteContainingClass(parachuteMethod.getParentClass().getDeclaration().toString());
+
             descriptor.setParachuteMethodDeclaration(parachuteMethod.getMethodDeclaration().toString());
             descriptor.setEndpointPath(parachuteMethod.getResourcePath());
 
@@ -174,6 +175,15 @@ public class ParachuteExtractor<T> {
 
             resolveInputTypes(explorer, parachuteMethod, descriptor);
             resolveReturnType(explorer, parachuteMethod, descriptor);
+
+            if (!parachuteMethod.getParentClass().getInnerClasses().isEmpty()) {
+                parachuteMethod.getParentClass()
+                        .getInnerClasses()
+                        .forEach(innerClass -> {
+
+                            descriptor.addInnerClass(innerClass.getDeclaration().toString());
+                        });
+            }
 
             // resolve method's type dependencies
             resolveTypeDependencies(explorer, parachuteMethod, descriptor);
@@ -198,10 +208,10 @@ public class ParachuteExtractor<T> {
 
     private Model prepareParachuteMavenScript(JavaProjectExplorer explorer, BundleDescriptor descriptor) {
         Model model = new Model();
-        model.setName("parachute-method." + descriptor.getParachuteName().toLowerCase());
+        model.setName(descriptor.getParachuteName().toLowerCase());
         model.setModelVersion("4.0.0");
         model.setGroupId(JavaConfiguration.PARACHUTE_PACKAGE.value());
-        model.setArtifactId(JavaConfiguration.PARACHUTE_PACKAGE.value().concat("-").concat(descriptor.getParachuteName().toLowerCase()));
+        model.setArtifactId(JavaConfiguration.PARACHUTE_PACKAGE.value().concat(".").concat(descriptor.getParachuteName().toLowerCase()));
         model.setVersion("1.0-SNAPSHOT");
 
         Set<Dependency> dependencies = new HashSet<>();

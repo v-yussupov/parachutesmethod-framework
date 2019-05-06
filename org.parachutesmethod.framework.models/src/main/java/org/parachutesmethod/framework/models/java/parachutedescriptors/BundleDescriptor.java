@@ -1,12 +1,12 @@
 package org.parachutesmethod.framework.models.java.parachutedescriptors;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.NodeList;
 import org.parachutesmethod.framework.models.java.projectmodel.JavaImport;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class BundleDescriptor {
     private String programmingLanguage;
@@ -17,6 +17,7 @@ public class BundleDescriptor {
     private List<String> imports = new ArrayList<>();
     private AnnotationsDescriptor parachuteAnnotations;
     private String parachuteContainingClass;
+    private List<String> innerClasses = new ArrayList<>();
     private String parachuteMethodDeclaration;
     private List<String> sameClassMethodDependencies = new ArrayList<>();
     private List<ParachuteInputType> inputTypes = new ArrayList<>();
@@ -120,6 +121,18 @@ public class BundleDescriptor {
 
     public void setParachuteContainingClass(String parachuteContainingClass) {
         this.parachuteContainingClass = parachuteContainingClass;
+    }
+
+    public List<String> getInnerClasses() {
+        return innerClasses;
+    }
+
+    public void setInnerClasses(List<String> innerClasses) {
+        this.innerClasses = innerClasses;
+    }
+
+    public void addInnerClass(String innerClass) {
+        this.innerClasses.add(innerClass);
     }
 
     public String getParachuteMethodDeclaration() {

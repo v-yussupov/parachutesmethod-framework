@@ -11,6 +11,12 @@ public class Constants {
     public static final String AWS_IMPORT_CONTEXT_OBJECT = "com.amazonaws.services.lambda.runtime.Context";
     public static final String AWS_IMPORT_LAMBDA_LOGGER = "com.amazonaws.services.lambda.runtime.LambdaLogger";
 
+    public static final String COMPILER_MAVEN_PLUGIN_ARTIFACTID = "maven-compiler-plugin";
+    public static final String COMPILER_MAVEN_PLUGIN_VERSION = "3.8.0";
+    public static final String COMPILER_MAVEN_PLUGIN_CONF_SOURCE = "source";
+    public static final String COMPILER_MAVEN_PLUGIN_CONF_TARGET = "target";
+    public static final String COMPILER_MAVEN_PLUGIN_CONF_VERSION = "1.8";
+
     public static final String SHADE_MAVEN_PLUGIN_ARTIFACTID = "maven-shade-plugin";
     public static final String SHADE_MAVEN_PLUGIN_VERSION = "2.3";
     public static final String SHADE_MAVEN_PLUGIN_CONF = "createDependencyReducedPom";
