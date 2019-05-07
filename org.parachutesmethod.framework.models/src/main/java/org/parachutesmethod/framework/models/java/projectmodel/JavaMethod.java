@@ -1,11 +1,5 @@
 package org.parachutesmethod.framework.models.java.projectmodel;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -14,6 +8,11 @@ import com.github.javaparser.ast.type.Type;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.parachutesmethod.framework.models.java.JavaConfiguration;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 public class JavaMethod {
 
@@ -65,17 +64,25 @@ public class JavaMethod {
         if (Objects.isNull(parentClass)) {
             return currentPath;
         }
+        
         Optional<JavaAnnotation> parentPathAnnotation = parentClass.getAnnotations().stream().filter(JavaAnnotation::isPathAnnotation).findFirst();
         if (parentPathAnnotation.isPresent()) {
             String parentResPath = parentPathAnnotation.get().getAnnotationExpression().asSingleMemberAnnotationExpr().getMemberValue().toString().replace("\"", "");
-            if (!parentResPath.isEmpty() && !"/".equals(parentResPath)) {
-                URI left = URI.create(parentResPath).normalize();
-                URI right = URI.create(currentPath).normalize();
-                currentPath = left.relativize(right).toString();
-            } else {
-                if (!currentPath.startsWith("/")) {
-                    currentPath = parentResPath + currentPath;
+            if (!parentResPath.isEmpty()) {
+                String[] parentTokens = parentResPath.split("/");
+                String[] currentTokens = currentPath.split("/");
+                String normalized = "/";
+                for (String s : parentTokens) {
+                    if (!s.isEmpty()) {
+                        normalized = normalized.concat(s).concat("/");
+                    }
                 }
+                for (String s : currentTokens) {
+                    if (!s.isEmpty()) {
+                        normalized = normalized.concat(s).concat("/");
+                    }
+                }
+                currentPath = normalized;
             }
         }
 

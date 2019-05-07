@@ -2,6 +2,8 @@ package org.parachutesmethod.framework.generation;
 
 public class Constants {
     public static final String DEPLOYMENT_BUNDLES_FOLDER = "deployment-bundles";
+    public static final String DEPLOYMENT_MODELS_FOLDER = "deployment-models";
+    public static final String ROUTER_CONFIGURATIONS_FOLDER = "router-configurations";
     public static final String PARACHUTES_FOLDER = "parachutes";
 
     public static final String AWS_MAVEN_DEP_GROUPID = "com.amazonaws";

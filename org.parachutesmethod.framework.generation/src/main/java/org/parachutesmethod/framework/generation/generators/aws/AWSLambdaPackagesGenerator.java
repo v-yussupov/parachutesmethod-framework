@@ -1,31 +1,11 @@
 package org.parachutesmethod.framework.generation.generators.aws;
 
-import java.io.BufferedWriter;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.ImportDeclaration;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
-import freemarker.template.TemplateException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.model.Build;
 import org.apache.maven.model.Dependency;
@@ -46,59 +26,41 @@ import org.parachutesmethod.framework.common.BuildScript;
 import org.parachutesmethod.framework.common.FileExtension;
 import org.parachutesmethod.framework.extraction.languages.SupportedLanguage;
 import org.parachutesmethod.framework.generation.Constants;
-import org.parachutesmethod.framework.generation.generators.routers.NginxRouterGenerator;
 import org.parachutesmethod.framework.models.java.JavaConfiguration;
 import org.parachutesmethod.framework.models.java.parachutedescriptors.BundleDescriptor;
 import org.parachutesmethod.framework.models.java.parachutedescriptors.ParachuteTypeDependency;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class AWSLambdaGenerator {
-    private static Logger LOGGER = LoggerFactory.getLogger(AWSLambdaGenerator.class);
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
-    public static void generate(Path path, List<BundleDescriptor> parachuteDescriptors) throws IOException {
-        Path bundlesDir = path.getParent().resolve(Constants.DEPLOYMENT_BUNDLES_FOLDER);
-        Path parachutesDir = bundlesDir.resolve(Constants.PARACHUTES_FOLDER);
-        Files.createDirectories(bundlesDir);
-        Files.createDirectories(parachutesDir);
-        Map<String, String> resourcePaths = new HashMap<>();
+public class AWSLambdaPackagesGenerator {
+    private static Logger LOGGER = LoggerFactory.getLogger(AWSLambdaPackagesGenerator.class);
 
-        parachuteDescriptors.forEach(descriptor -> {
-            try {
-                Path parachuteDir = parachutesDir.resolve(descriptor.getParachuteName().toLowerCase());
-                Path parachuteJavaProjectDir = Paths.get(
-                        parachuteDir.toString(),
-                        JavaConfiguration.JAVA_PROJECT_FILES_PATH.value(),
-                        JavaConfiguration.PARACHUTE_PACKAGE.value().replace(".", "/")
-                );
-                Files.createDirectory(parachuteDir);
-                Files.createDirectories(parachuteJavaProjectDir);
+    private Path bundlesDirectory;
+    private List<BundleDescriptor> parachuteDescriptors;
+    private Map<String, String> resourcePaths = new HashMap<>();
 
-                if (Objects.nonNull(descriptor.getProgrammingLanguage())) {
-                    if (descriptor.getProgrammingLanguage().equals(SupportedLanguage.JAVA.getName())) {
-                        LOGGER.info("Generating and building AWS Lambda for a parachuteName: " + descriptor.getParachuteName());
-
-                        generateJavaLambda(parachuteJavaProjectDir, descriptor);
-                        generateAWSCompliantJavaBuildScript(parachuteDir, descriptor);
-                        runJavaBuildScript(parachuteDir);
-
-                        resourcePaths.put(descriptor.getParachuteName(), descriptor.getEndpointPath());
-                    }
-                }
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
-
-        Map<String, String> routerConfigurations = generateRouterConfiguration(bundlesDir, resourcePaths);
-
-        Path cloudFormationTemplatesDir = bundlesDir.resolve("deployment-models");
-        Files.createDirectory(cloudFormationTemplatesDir);
-        try {
-            CloudFormationGenerator.generateCloudFormationTemplate(cloudFormationTemplatesDir.toString(), routerConfigurations);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public AWSLambdaPackagesGenerator(Path bundlesDirectory, List<BundleDescriptor> parachuteDescriptors) {
+        this.bundlesDirectory = bundlesDirectory;
+        this.parachuteDescriptors = parachuteDescriptors;
     }
 
     private static void generateJavaLambda(Path parachuteProjectDir, BundleDescriptor descriptor) throws IOException {
@@ -253,32 +215,48 @@ public class AWSLambdaGenerator {
         }
     }
 
-    private static Map<String, String> generateRouterConfiguration(Path bundlesDir, Map<String, String> parachuteURIs) {
-        Map<String, String> routerConfigurations = new HashMap<>();
-        Path parachuteDir = bundlesDir.resolve("router-configurations");
-        try {
-            Files.createDirectory(parachuteDir);
-            routerConfigurations = NginxRouterGenerator.generateNginxRouterConfigurationFiles(parachuteDir.toString(), parachuteURIs);
-        } catch (TemplateException | IOException e) {
-            e.printStackTrace();
-        }
-        return routerConfigurations;
+    public void generate() throws IOException {
+        Path parachutesDir = bundlesDirectory.resolve(Constants.PARACHUTES_FOLDER);
+        Files.createDirectories(bundlesDirectory);
+        Files.createDirectories(parachutesDir);
+
+        parachuteDescriptors.forEach(descriptor -> {
+            try {
+                Path parachuteDir = parachutesDir.resolve(descriptor.getParachuteName().toLowerCase());
+                Path parachuteJavaProjectDir = Paths.get(
+                        parachuteDir.toString(),
+                        JavaConfiguration.JAVA_PROJECT_FILES_PATH.value(),
+                        JavaConfiguration.PARACHUTE_PACKAGE.value().replace(".", "/")
+                );
+                Files.createDirectory(parachuteDir);
+                Files.createDirectories(parachuteJavaProjectDir);
+
+                if (Objects.nonNull(descriptor.getProgrammingLanguage())) {
+                    if (descriptor.getProgrammingLanguage().equals(SupportedLanguage.JAVA.getName())) {
+                        LOGGER.info("Generating and building AWS Lambda for a parachuteName: " + descriptor.getParachuteName());
+
+                        generateJavaLambda(parachuteJavaProjectDir, descriptor);
+                        generateAWSCompliantJavaBuildScript(parachuteDir, descriptor);
+                        runJavaBuildScript(parachuteDir);
+
+                        resourcePaths.put(descriptor.getParachuteName(), descriptor.getEndpointPath());
+                    }
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
-    private void draftMethod() {
-        //e.getProjectFiles().forEach(f -> {
-        // dependency classes
-            /*else {
-                Path additional = parachuteProjectDir.resolve(f.getFileName());
-                try {
-                    Files.createFile(additional);
-                    try (Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(additional.toFile()), StandardCharsets.UTF_8))) {
-                        writer.write(f.getParsedFile().toString());
-                    }
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-            }*/
-        //});
+    public Path getBundlesDirectory() {
+        return bundlesDirectory;
+    }
+
+    public List<BundleDescriptor> getParachuteDescriptors() {
+        return parachuteDescriptors;
+    }
+
+    public Map<String, String> getResourcePaths() {
+        return resourcePaths;
     }
 }
