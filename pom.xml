@@ -32,6 +32,7 @@
         <module>org.parachutesmethod.framework.generation</module>
         <module>org.parachutesmethod.framework.models</module>
         <module>org.parachutesmethod.framework.common</module>
+        <module>org.parachutesmethod.framework.deployment</module>
     </modules>
 
     <dependencyManagement>
