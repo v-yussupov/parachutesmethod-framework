@@ -8,6 +8,7 @@ import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.MarkerAnnotationExpr;
 import com.github.javaparser.ast.expr.MemberValuePair;
 import com.github.javaparser.ast.expr.NormalAnnotationExpr;
+import com.github.javaparser.resolution.UnsolvedSymbolException;
 import com.github.javaparser.resolution.declarations.ResolvedAnnotationDeclaration;
 import org.parachutesmethod.framework.models.java.JavaConfiguration;
 
@@ -44,8 +45,11 @@ public class JavaAnnotation {
             parachuteAnnotation = true;
         } else {
             // do not resolve parachute annotations
-            ResolvedAnnotationDeclaration ra = annotationExpression.resolve();
-            this.className = ra.getQualifiedName();
+            try {
+                ResolvedAnnotationDeclaration ra = annotationExpression.resolve();
+                this.className = ra.getQualifiedName();
+            } catch (UnsolvedSymbolException ignored) {
+            }
         }
 
         if (this.getName().equals(JavaConfiguration.PATH_ANNOTATION.value())) {
