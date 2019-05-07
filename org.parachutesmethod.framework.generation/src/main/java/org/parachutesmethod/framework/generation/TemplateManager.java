@@ -6,7 +6,11 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Map;
 
 public enum TemplateManager {
@@ -80,10 +84,10 @@ public enum TemplateManager {
         Template temp = getTemplate(templateType, templateName);
 
         // Merge the data with the template and write the result in a file
-        Writer out = new FileWriter(filePath);
-        temp.process(templateData, out);
-
-        out.flush();
-        out.close();
+        try (Writer out = new FileWriter(filePath)) {
+            temp.process(templateData, out);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

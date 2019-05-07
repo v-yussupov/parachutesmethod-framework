@@ -51,14 +51,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
-public class AWSLambdaPackagesGenerator {
-    private static Logger LOGGER = LoggerFactory.getLogger(AWSLambdaPackagesGenerator.class);
+public class LambdaPackageGenerator {
+    private static Logger LOGGER = LoggerFactory.getLogger(LambdaPackageGenerator.class);
 
     private Path bundlesDirectory;
     private List<BundleDescriptor> parachuteDescriptors;
     private Map<String, String> resourcePaths = new HashMap<>();
 
-    public AWSLambdaPackagesGenerator(Path bundlesDirectory, List<BundleDescriptor> parachuteDescriptors) {
+    public LambdaPackageGenerator(Path bundlesDirectory, List<BundleDescriptor> parachuteDescriptors) {
         this.bundlesDirectory = bundlesDirectory;
         this.parachuteDescriptors = parachuteDescriptors;
     }

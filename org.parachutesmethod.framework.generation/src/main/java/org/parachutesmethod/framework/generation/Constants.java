@@ -34,6 +34,8 @@ public class Constants {
 
     public static final String TEMPLATES_TYPE_DEPLOY_MODEL = "deploymentModel";
     public static final String TEMPLATE_DEPLOY_MODEL_AWS = "aws-cloud-formation.ftl";
+    public static final String TEMPLATE_AWS_SAM = "aws-sam.ftl";
 
     public static final String AWS_CLOUD_FORMATION_TEMPLATE_FILE = "aws-cf-template.json";
+    public static final String AWS_SAM_TEMPLATE = "template";
 }

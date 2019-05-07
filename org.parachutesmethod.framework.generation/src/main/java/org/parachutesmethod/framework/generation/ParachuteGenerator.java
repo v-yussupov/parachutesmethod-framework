@@ -4,8 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import freemarker.template.TemplateException;
 import org.parachutesmethod.framework.common.FileExtension;
 import org.parachutesmethod.framework.extraction.ExtractionSetting;
-import org.parachutesmethod.framework.generation.generators.aws.AWSLambdaPackagesGenerator;
 import org.parachutesmethod.framework.generation.generators.aws.CloudFormationGenerator;
+import org.parachutesmethod.framework.generation.generators.aws.LambdaPackageGenerator;
+import org.parachutesmethod.framework.generation.generators.aws.SAMTemplateGenerator;
 import org.parachutesmethod.framework.generation.generators.routers.NginxRouterGenerator;
 import org.parachutesmethod.framework.models.java.parachutedescriptors.BundleDescriptor;
 import org.slf4j.Logger;
@@ -61,7 +62,7 @@ public class ParachuteGenerator {
     private void generateParachuteBundles() throws IOException {
         if (provider.equals(SupportedCloudProvider.AWS)) {
             Path bundlesDirectory = path.getParent().resolve(Constants.DEPLOYMENT_BUNDLES_FOLDER);
-            AWSLambdaPackagesGenerator generator = new AWSLambdaPackagesGenerator(bundlesDirectory, parachuteDescriptors);
+            LambdaPackageGenerator generator = new LambdaPackageGenerator(bundlesDirectory, parachuteDescriptors);
             generator.generate();
 
             Map<String, String> routerConfigurations = generateRouterConfiguration(bundlesDirectory, parachuteDescriptors);
@@ -70,18 +71,19 @@ public class ParachuteGenerator {
             Files.createDirectory(cloudFormationTemplatesDir);
             try {
                 CloudFormationGenerator.generateCloudFormationTemplate(cloudFormationTemplatesDir.toString(), routerConfigurations);
+                SAMTemplateGenerator.generate(cloudFormationTemplatesDir, parachuteDescriptors);
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private Map<String, String> generateRouterConfiguration(Path bundlesDir, List<BundleDescriptor> parachuteURIs) {
+    private Map<String, String> generateRouterConfiguration(Path bundlesDir, List<BundleDescriptor> descriptors) {
         Map<String, String> routerConfigurations = new HashMap<>();
         Path parachuteDir = bundlesDir.resolve(Constants.ROUTER_CONFIGURATIONS_FOLDER);
         try {
             Files.createDirectory(parachuteDir);
-            routerConfigurations = NginxRouterGenerator.generateNginxRouterConfigurationFiles(parachuteDir.toString(), parachuteURIs);
+            routerConfigurations = NginxRouterGenerator.generateNginxRouterConfigurationFiles(parachuteDir.toString(), descriptors);
         } catch (TemplateException | IOException e) {
             e.printStackTrace();
         }
