@@ -5,15 +5,15 @@ import org.parachutesmethod.framework.common.BuildScript;
 public class BuildScriptDescriptor {
     private String buildTool;
     private String buildScriptName;
+    private String artifactName;
     private String content;
 
     public BuildScriptDescriptor() {
     }
 
-    public BuildScriptDescriptor(BuildScript buildScriptType, String content) {
+    public BuildScriptDescriptor(BuildScript buildScriptType) {
         this.buildTool = buildScriptType.name();
         this.buildScriptName = buildScriptType.value();
-        this.content = content;
     }
 
     public String getBuildScriptName() {
@@ -30,6 +30,14 @@ public class BuildScriptDescriptor {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    public String getArtifactName() {
+        return artifactName;
+    }
+
+    public void setArtifactName(String artifactName) {
+        this.artifactName = artifactName;
     }
 
     public String getBuildTool() {

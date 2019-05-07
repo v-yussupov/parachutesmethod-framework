@@ -1,23 +1,5 @@
 package org.parachutesmethod.framework.extraction;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.StringWriter;
-import java.io.Writer;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
@@ -51,6 +33,24 @@ import org.parachutesmethod.framework.models.java.projectmodel.JavaMethod;
 import org.parachutesmethod.framework.models.java.projectmodel.MavenProjectObjectModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Set;
 
 public class ParachuteExtractor<T> {
 
@@ -193,7 +193,14 @@ public class ParachuteExtractor<T> {
 
             // prepare build script
             Model model = prepareParachuteMavenScript(explorer, descriptor);
-            BuildScriptDescriptor buildScript = new BuildScriptDescriptor(BuildScript.MAVEN, writeMavenScriptToString(model));
+            BuildScriptDescriptor buildScript = new BuildScriptDescriptor(BuildScript.MAVEN);
+            buildScript.setContent(writeMavenScriptToString(model));
+            buildScript.setArtifactName(
+                    model.getArtifactId()
+                            .concat("-")
+                            .concat(model.getVersion())
+                            .concat(FileExtension.JAR.extension())
+            );
             descriptor.setBuildScript(buildScript);
 
             // Extract parachute meta-data

@@ -4,7 +4,9 @@ public enum FileExtension {
     JSON(".json"),
     XML(".xml"),
     YAML(".yml"),
-    JAVA(".java");
+    JAVA(".java"),
+    JAR(".jar"),
+    WAR(".war");
 
     private final String extension;
 
