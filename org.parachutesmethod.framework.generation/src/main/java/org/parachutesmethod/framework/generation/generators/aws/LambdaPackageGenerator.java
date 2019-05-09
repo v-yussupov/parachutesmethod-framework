@@ -56,7 +56,6 @@ public class LambdaPackageGenerator {
 
     private Path bundlesDirectory;
     private List<BundleDescriptor> parachuteDescriptors;
-    private Map<String, String> resourcePaths = new HashMap<>();
 
     public LambdaPackageGenerator(Path bundlesDirectory, List<BundleDescriptor> parachuteDescriptors) {
         this.bundlesDirectory = bundlesDirectory;
@@ -238,8 +237,6 @@ public class LambdaPackageGenerator {
                         generateJavaLambda(parachuteJavaProjectDir, descriptor);
                         generateAWSCompliantJavaBuildScript(parachuteDir, descriptor);
                         runJavaBuildScript(parachuteDir);
-
-                        resourcePaths.put(descriptor.getParachuteName(), descriptor.getEndpointPath());
                     }
                 }
             } catch (IOException e) {
@@ -254,9 +251,5 @@ public class LambdaPackageGenerator {
 
     public List<BundleDescriptor> getParachuteDescriptors() {
         return parachuteDescriptors;
-    }
-
-    public Map<String, String> getResourcePaths() {
-        return resourcePaths;
     }
 }

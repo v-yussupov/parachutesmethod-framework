@@ -26,7 +26,7 @@ public class SAMTemplateGenerator {
      * @return the target file path of the generated AWS SAM template file
      * @throws Exception an exception occurred while generating SAM template
      */
-    public static String generate(Path targetLocation, List<BundleDescriptor> descriptors) throws IOException, TemplateException {
+    public static String generate(String tempProjectName, List<BundleDescriptor> descriptors, Path targetLocation) throws IOException, TemplateException {
         Files.createDirectories(targetLocation);
 
         List<SAMFunction> functions = new ArrayList<>();
@@ -34,7 +34,8 @@ public class SAMTemplateGenerator {
         descriptors.forEach(d -> {
             functions.add(new SAMFunction(
                     StringUtils.capitalize(d.getParachuteName()).concat("Function"),
-                    "target/parachute-1.0.0.jar",
+                    tempProjectName,
+                    d.getBuildScript().getArtifactName(),
                     JavaConfiguration.PARACHUTE_PACKAGE.value(),
                     StringUtils.capitalize(d.getParachuteName()),
                     d.getParachuteName(),

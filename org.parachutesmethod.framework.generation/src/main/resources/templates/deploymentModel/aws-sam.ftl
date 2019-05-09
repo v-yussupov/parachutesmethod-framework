@@ -21,7 +21,9 @@ Resources:
         <#-- More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction -->
         Type: AWS::Serverless::Function
         Properties:
-            CodeUri: ${function.codeuri} <#-- example: target/aws-sam-java-rest-1.0.0.jar -->
+            CodeUri:
+                Bucket: ${function.bucketName}
+                Key: ${function.objectKey}
             Handler: ${function.packageName}.${function.className}::${function.handler}
             Runtime: ${function.runtime}
             <#-- More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api -->

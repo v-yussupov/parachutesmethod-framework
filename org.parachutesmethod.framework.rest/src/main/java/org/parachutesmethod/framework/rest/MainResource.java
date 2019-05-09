@@ -63,18 +63,20 @@ public class MainResource {
     /**
      * Generates parachute deployment bundles for a given cloud service provider
      *
-     * @param path     the path to extracted provider-agnostic parachute bundles
-     * @param provider the target cloud service provider
+     * @param tempProjectDirPath the path to the temporary project directory
+     * @param provider           the target cloud service provider
+     * @param deploy             directly deploy generated bundles
      */
     @POST
     @Path("generate")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
-    public Response generateParachute(@ApiParam(name = "path", required = true) @FormParam("path") String path,
-                                      @ApiParam(name = "provider", required = true) @FormParam("provider") String provider) {
+    public Response generateParachute(@ApiParam(name = "tempProjectDirPath", required = true) @FormParam("tempProjectDirPath") String tempProjectDirPath,
+                                      @ApiParam(name = "provider", required = true) @FormParam("provider") String provider,
+                                      @ApiParam(name = "deploy") @FormParam("deploy") boolean deploy) {
         try {
-            ParachuteGenerator generator = new ParachuteGenerator(path, provider);
-            generator.generate();
+            ParachuteGenerator generator = new ParachuteGenerator(tempProjectDirPath, provider);
+            generator.generate(deploy);
 
             return Response.ok().build();
         } catch (IOException e) {

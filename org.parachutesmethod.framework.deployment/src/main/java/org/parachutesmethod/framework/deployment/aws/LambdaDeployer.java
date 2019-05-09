@@ -1,41 +1,44 @@
 package org.parachutesmethod.framework.deployment.aws;
 
-import java.io.IOException;
-
+import org.parachutesmethod.framework.models.java.parachutedescriptors.BundleDescriptor;
 import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CreateBucketConfiguration;
+import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
+import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+
+import java.nio.file.Path;
+import java.util.List;
 
 public class LambdaDeployer {
 
-    public static void puloadLambdaPackagesToS3Bucket(String tempProjectDirName) {
-        try {
-            String bucketName = "tempProjectDirName" + System.currentTimeMillis();
-            ProfileCredentialsProvider credentialsProvider = ProfileCredentialsProvider.create();
-            //credentialsProvider.
+    public static void uploadLambdaPackagesToS3Bucket(Path tempProjectDirName, List<BundleDescriptor> descriptors) {
 
-            S3Client s3Client = S3Client.builder().credentialsProvider(ProfileCredentialsProvider.create()).build();
+        S3Client s3Client = S3Client.builder().credentialsProvider(ProfileCredentialsProvider.create()).build();
+        String bucketName = tempProjectDirName.getFileName().toString();
 
-            if (!s3Client.  doesBucketExistV2(bucketName)) {
-                // Because the CreateBucketRequest object doesn't specify a region, the
-                // bucket is created in the region specified in the client.
-                s3Client.createBucket(new CreateBucketRequest(bucketName));
+        CreateBucketRequest createBucketRequest = CreateBucketRequest
+                .builder()
+                .bucket(bucketName)
+                .createBucketConfiguration(CreateBucketConfiguration.builder()
+                        .build())
+                .build();
+        s3Client.createBucket(createBucketRequest);
 
-                // Verify that the bucket was created by retrieving it and checking its location.
-                String bucketLocation = s3Client.getBucketLocation(new GetBucketLocationRequest(bucketName));
-                System.out.println("Bucket location: " + bucketLocation);
-            }
-        }
-        catch(AmazonServiceException e) {
-            // The call was transmitted successfully, but Amazon S3 couldn't process
-            // it and returned an error response.
-            e.printStackTrace();
-        }
-        catch(SdkClientException e) {
-            // Amazon S3 couldn't be contacted for a response, or the client
-            // couldn't parse the response from Amazon S3.
-            e.printStackTrace();
-        }
+        descriptors.forEach(descriptor -> {
+            Path lambdaPacakgePath = tempProjectDirName.resolve("deployment-bundles")
+                    .resolve("parachutes")
+                    .resolve(descriptor.getParachuteName().toLowerCase())
+                    .resolve("target")
+                    .resolve(descriptor.getBuildScript().getArtifactName());
+
+            s3Client.putObject(
+                    PutObjectRequest.builder()
+                            .bucket(bucketName)
+                            .key(descriptor.getBuildScript().getArtifactName())
+                            .build(),
+                    RequestBody.fromFile(lambdaPacakgePath));
+        });
     }
-
-
 }

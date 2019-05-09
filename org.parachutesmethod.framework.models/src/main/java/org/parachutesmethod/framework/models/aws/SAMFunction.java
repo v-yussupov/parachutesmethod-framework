@@ -1,6 +1,8 @@
 package org.parachutesmethod.framework.models.aws;
 
 public class SAMFunction {
+    private String bucketName;
+    private String objectKey;
     private String name;
     private String codeuri;
     private String packageName;
@@ -12,9 +14,10 @@ public class SAMFunction {
     public SAMFunction() {
     }
 
-    public SAMFunction(String name, String codeuri, String packageName, String className, String handler, String runtime, String endpoint) {
+    public SAMFunction(String name, String bucketName, String objectKey, String packageName, String className, String handler, String runtime, String endpoint) {
         this.name = name;
-        this.codeuri = codeuri;
+        this.bucketName = bucketName;
+        this.objectKey = objectKey;
         this.packageName = packageName;
         this.className = className;
         this.handler = handler;
@@ -76,5 +79,21 @@ public class SAMFunction {
 
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
+    }
+
+    public String getBucketName() {
+        return bucketName;
+    }
+
+    public void setBucketName(String bucketName) {
+        this.bucketName = bucketName;
+    }
+
+    public String getObjectKey() {
+        return objectKey;
+    }
+
+    public void setObjectKey(String objectKey) {
+        this.objectKey = objectKey;
     }
 }

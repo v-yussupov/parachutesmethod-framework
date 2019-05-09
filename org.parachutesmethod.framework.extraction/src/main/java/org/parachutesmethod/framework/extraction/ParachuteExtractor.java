@@ -147,10 +147,10 @@ public class ParachuteExtractor<T> {
 
     private Optional<Path> generateJavaParachuteBundles(JavaProjectExplorer explorer) throws ProjectParsingException {
         if (explorer.hasParachutes()) {
-            Path tempPath = tempRootDirectoryPath.resolve(ExtractionSetting.GENERATION_BUNDLES_FOLDER.value());
+            Path tempPath = tempRootDirectoryPath.resolve(ExtractionSetting.DESCRIPTORS_FOLDER_NAME.value());
             explorer.getParachuteMethods().forEach(parachuteMethod -> prepareJavaParachute(tempPath, explorer, parachuteMethod));
 
-            return Optional.of(tempPath);
+            return Optional.of(tempRootDirectoryPath);
         }
         throw new ProjectParsingException("Project contains no parachute annotations");
     }
@@ -203,8 +203,7 @@ public class ParachuteExtractor<T> {
             );
             descriptor.setBuildScript(buildScript);
 
-            // Extract parachute meta-data
-            Path spec = dir.resolve(ExtractionSetting.BUNDLE_SPECFILE_NAME.value().concat(FileExtension.JSON.extension()));
+            Path spec = dir.resolve(ExtractionSetting.DESCRIPTOR_NAME.value().concat(FileExtension.JSON.extension()));
             Files.createFile(spec);
             ObjectMapper mapper = new ObjectMapper();
             mapper.writerWithDefaultPrettyPrinter().writeValue(spec.toFile(), descriptor);

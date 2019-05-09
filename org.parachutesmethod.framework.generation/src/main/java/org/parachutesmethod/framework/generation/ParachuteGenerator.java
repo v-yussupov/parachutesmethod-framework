@@ -3,6 +3,7 @@ package org.parachutesmethod.framework.generation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import freemarker.template.TemplateException;
 import org.parachutesmethod.framework.common.FileExtension;
+import org.parachutesmethod.framework.deployment.aws.LambdaDeployer;
 import org.parachutesmethod.framework.extraction.ExtractionSetting;
 import org.parachutesmethod.framework.generation.generators.aws.CloudFormationGenerator;
 import org.parachutesmethod.framework.generation.generators.aws.LambdaPackageGenerator;
@@ -25,27 +26,29 @@ import java.util.stream.Collectors;
 public class ParachuteGenerator {
     private static Logger LOGGER = LoggerFactory.getLogger(ParachuteGenerator.class);
 
-    private Path path;
+    private Path tempProjectDirPath;
+    private Path descriptorsPath;
     private SupportedCloudProvider provider;
     private List<BundleDescriptor> parachuteDescriptors = new ArrayList<>();
 
-    public ParachuteGenerator(String path, String provider) {
-        this.path = Paths.get(path);
+    public ParachuteGenerator(String tempProjectDirPath, String provider) {
+        this.tempProjectDirPath = Paths.get(tempProjectDirPath);
+        this.descriptorsPath = this.tempProjectDirPath.resolve(ExtractionSetting.DESCRIPTORS_FOLDER_NAME.value());
         this.provider = SupportedCloudProvider.getValue(provider);
     }
 
-    public void generate() throws IOException {
+    public void generate(boolean deploy) throws IOException {
         deserializeBundleDescriptors();
-        generateParachuteBundles();
+        generateParachuteBundles(deploy);
     }
 
     private void deserializeBundleDescriptors() throws IOException {
-        List<Path> parachuteProjectDirectories = Files.list(path)
+        List<Path> parachuteProjectDirectories = Files.list(descriptorsPath)
                 .filter(Files::isDirectory)
                 .collect(Collectors.toList());
 
         parachuteProjectDirectories.forEach(dir -> {
-            Path descriptorPath = dir.resolve(ExtractionSetting.BUNDLE_SPECFILE_NAME.value().concat(FileExtension.JSON.extension()));
+            Path descriptorPath = dir.resolve(ExtractionSetting.DESCRIPTOR_NAME.value().concat(FileExtension.JSON.extension()));
 
             try {
                 LOGGER.info("Starting to deserialize the parachute descriptor");
@@ -59,9 +62,9 @@ public class ParachuteGenerator {
         });
     }
 
-    private void generateParachuteBundles() throws IOException {
+    private void generateParachuteBundles(boolean deploy) throws IOException {
         if (provider.equals(SupportedCloudProvider.AWS)) {
-            Path bundlesDirectory = path.getParent().resolve(Constants.DEPLOYMENT_BUNDLES_FOLDER);
+            Path bundlesDirectory = tempProjectDirPath.resolve(Constants.DEPLOYMENT_BUNDLES_FOLDER);
             LambdaPackageGenerator generator = new LambdaPackageGenerator(bundlesDirectory, parachuteDescriptors);
             generator.generate();
 
@@ -71,7 +74,13 @@ public class ParachuteGenerator {
             Files.createDirectory(cloudFormationTemplatesDir);
             try {
                 CloudFormationGenerator.generateCloudFormationTemplate(cloudFormationTemplatesDir.toString(), routerConfigurations);
-                SAMTemplateGenerator.generate(cloudFormationTemplatesDir, parachuteDescriptors);
+                SAMTemplateGenerator.generate(tempProjectDirPath.getFileName().toString(), parachuteDescriptors, cloudFormationTemplatesDir);
+
+                if (deploy) {
+
+                    LambdaDeployer.uploadLambdaPackagesToS3Bucket(tempProjectDirPath, parachuteDescriptors);
+                }
+
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -88,5 +97,9 @@ public class ParachuteGenerator {
             e.printStackTrace();
         }
         return routerConfigurations;
+    }
+
+    public Path getDescriptorsPath() {
+        return descriptorsPath;
     }
 }
