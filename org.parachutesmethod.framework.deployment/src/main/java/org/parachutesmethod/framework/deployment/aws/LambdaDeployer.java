@@ -2,19 +2,20 @@ package org.parachutesmethod.framework.deployment.aws;
 
 import java.io.IOException;
 
+import software.amazon.awssdk.auth.credentials.ProfileCredentialsProvider;
+import software.amazon.awssdk.services.s3.S3Client;
+
 public class LambdaDeployer {
 
-    public static void main(String[] args) throws IOException {
-        String clientRegion = "*** Client region ***";
-        String bucketName = "*** Bucket name ***";
+    public static void puloadLambdaPackagesToS3Bucket(String tempProjectDirName) {
+        try {
+            String bucketName = "tempProjectDirName" + System.currentTimeMillis();
+            ProfileCredentialsProvider credentialsProvider = ProfileCredentialsProvider.create();
+            //credentialsProvider.
 
-        /*try {
-            AmazonS3 s3Client = AmazonS3ClientBuilder.standard()
-                    .withCredentials(new ProfileCredentialsProvider())
-                    .withRegion(clientRegion)
-                    .build();
+            S3Client s3Client = S3Client.builder().credentialsProvider(ProfileCredentialsProvider.create()).build();
 
-            if (!s3Client.doesBucketExistV2(bucketName)) {
+            if (!s3Client.  doesBucketExistV2(bucketName)) {
                 // Because the CreateBucketRequest object doesn't specify a region, the
                 // bucket is created in the region specified in the client.
                 s3Client.createBucket(new CreateBucketRequest(bucketName));
@@ -33,7 +34,7 @@ public class LambdaDeployer {
             // Amazon S3 couldn't be contacted for a response, or the client
             // couldn't parse the response from Amazon S3.
             e.printStackTrace();
-        }*/
+        }
     }
 
 
