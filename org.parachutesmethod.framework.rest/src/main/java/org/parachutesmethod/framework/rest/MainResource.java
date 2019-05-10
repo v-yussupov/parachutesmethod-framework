@@ -1,16 +1,8 @@
 package org.parachutesmethod.framework.rest;
 
-import io.swagger.annotations.Api;
-import io.swagger.annotations.ApiOperation;
-import io.swagger.annotations.ApiParam;
-import org.eclipse.jgit.api.errors.GitAPIException;
-import org.parachutesmethod.framework.extraction.ParachuteExtractor;
-import org.parachutesmethod.framework.extraction.exceptions.LangSupportException;
-import org.parachutesmethod.framework.extraction.exceptions.ProjectParsingException;
-import org.parachutesmethod.framework.extraction.exceptions.WrongRepositoryException;
-import org.parachutesmethod.framework.generation.ParachuteGenerator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Paths;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
@@ -20,8 +12,19 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.io.IOException;
-import java.net.URL;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import org.eclipse.jgit.api.errors.GitAPIException;
+import org.parachutesmethod.framework.deployment.aws.LambdaDeployer;
+import org.parachutesmethod.framework.extraction.ParachuteExtractor;
+import org.parachutesmethod.framework.extraction.exceptions.LangSupportException;
+import org.parachutesmethod.framework.extraction.exceptions.ProjectParsingException;
+import org.parachutesmethod.framework.extraction.exceptions.WrongRepositoryException;
+import org.parachutesmethod.framework.generation.ParachuteGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Path("/")
 @Api(value = "mainresource", description = "Sample description")
@@ -80,6 +83,22 @@ public class MainResource {
 
             return Response.ok().build();
         } catch (IOException e) {
+            LOGGER.error(e.getMessage());
+            e.printStackTrace();
+            return Response.serverError().entity(e.getMessage()).build();
+        }
+    }
+
+    @POST
+    @Path("test")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response runCmd(@ApiParam(name = "tempProjectDirPath", required = true) @FormParam("tempProjectDirPath") String tempProjectDirPath) {
+        try {
+            LambdaDeployer.deploySAMTemplate(Paths.get(tempProjectDirPath));
+
+            return Response.ok().build();
+        } catch (Exception e) {
             LOGGER.error(e.getMessage());
             e.printStackTrace();
             return Response.serverError().entity(e.getMessage()).build();

@@ -55,7 +55,7 @@ public class ParachuteGenerator {
                 ObjectMapper mapper = new ObjectMapper();
                 BundleDescriptor descriptor = mapper.readValue(descriptorPath.toFile(), BundleDescriptor.class);
                 parachuteDescriptors.add(descriptor);
-                LOGGER.info("Finished deserializing the parachute descriptor for parachute: %s", descriptor.getParachuteName());
+                LOGGER.info("Finished deserializing the parachute descriptor for parachute: " + descriptor.getParachuteName());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -79,6 +79,7 @@ public class ParachuteGenerator {
                 if (deploy) {
 
                     LambdaDeployer.uploadLambdaPackagesToS3Bucket(tempProjectDirPath, parachuteDescriptors);
+                    LambdaDeployer.deploySAMTemplate(tempProjectDirPath);
                 }
 
             } catch (Exception e) {
