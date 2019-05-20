@@ -23,7 +23,7 @@ public class NginxRouterGenerator {
      * @return a map of parachute names and file paths to their corresponding nginx configuration files
      * @throws Exception an exception occurred while generating nginx configuration files
      */
-    public static Map<String, String> generateNginxRouterConfigurationFiles(String resultPath, List<BundleDescriptor> descriptors) throws IOException, TemplateException {
+    public static Map<String, String> generateNginxRouterConfigurationFiles(String resultPath, List<BundleDescriptor> descriptors) throws Exception {
         Path targetLocation = Paths.get(resultPath);
         Files.createDirectories(targetLocation);
 
@@ -47,17 +47,6 @@ public class NginxRouterGenerator {
             result.put(d.getParachuteName(), configFile);
             templateData.clear();
         });
-
-        // Create an additional configuration file for the original application
-        String defaultConfigFile = targetLocation.resolve(Constants.NGINX_ROUTER_DEFAULT_CONF + ".conf").toString();
-
-        templateData.put("parachuteName", Constants.NGINX_ROUTER_DEFAULT_CONF);
-        templateData.put("uri", "/");
-        templateData.put("default", true);
-
-        TemplateManager.INSTANCE.processTemplateToFile(Constants.TEMPLATES_TYPE_ROUTER_CONF,
-                Constants.TEMPLATE_ROUTER_CONF_AWS, templateData, defaultConfigFile);
-        result.put(Constants.NGINX_ROUTER_DEFAULT_CONF, defaultConfigFile);
 
         return result;
     }

@@ -30,8 +30,6 @@ public class Constants {
     public static final String TEMPLATES_TYPE_ROUTER_CONF = "routerConf";
     public static final String TEMPLATE_ROUTER_CONF_AWS = "aws-nginx.ftl";
 
-    public static final String NGINX_ROUTER_DEFAULT_CONF = "default";
-
     public static final String TEMPLATES_TYPE_DEPLOY_MODEL = "deploymentModel";
     public static final String TEMPLATE_DEPLOY_MODEL_AWS = "aws-cloud-formation.ftl";
     public static final String TEMPLATE_AWS_SAM = "aws-sam.ftl";
