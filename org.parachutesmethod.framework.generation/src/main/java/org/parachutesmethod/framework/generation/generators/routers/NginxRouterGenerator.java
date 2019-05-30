@@ -23,7 +23,7 @@ public class NginxRouterGenerator {
      * @return a map of parachute names and file paths to their corresponding nginx configuration files
      * @throws Exception an exception occurred while generating nginx configuration files
      */
-    public static Map<String, String> generateNginxRouterConfigurationFiles(String resultPath, List<BundleDescriptor> descriptors) throws Exception {
+    public static Map<String, String> generateNginxRouterConfigurationFiles(String resultPath, List<BundleDescriptor> descriptors) throws IOException {
         Path targetLocation = Paths.get(resultPath);
         Files.createDirectories(targetLocation);
 

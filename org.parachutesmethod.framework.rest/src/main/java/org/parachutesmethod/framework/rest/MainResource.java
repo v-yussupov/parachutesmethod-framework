@@ -17,7 +17,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.parachutesmethod.framework.deployment.aws.LambdaDeployer;
+import org.parachutesmethod.framework.deployment.AWSDeployer;
 import org.parachutesmethod.framework.extraction.ParachuteExtractor;
 import org.parachutesmethod.framework.extraction.exceptions.LangSupportException;
 import org.parachutesmethod.framework.extraction.exceptions.ProjectParsingException;
@@ -90,12 +90,13 @@ public class MainResource {
     }
 
     @POST
-    @Path("test")
+    @Path("deploy")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.TEXT_PLAIN)
     public Response runCmd(@ApiParam(name = "tempProjectDirPath", required = true) @FormParam("tempProjectDirPath") String tempProjectDirPath) {
         try {
-            LambdaDeployer.deploySAMTemplate(Paths.get(tempProjectDirPath));
+            AWSDeployer.deploySAMTemplate(Paths.get(tempProjectDirPath));
+            AWSDeployer.deployCFTemplate(Paths.get(tempProjectDirPath));
 
             return Response.ok().build();
         } catch (Exception e) {

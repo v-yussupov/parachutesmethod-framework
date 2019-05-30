@@ -3,7 +3,7 @@ package org.parachutesmethod.framework.generation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import freemarker.template.TemplateException;
 import org.parachutesmethod.framework.common.FileExtension;
-import org.parachutesmethod.framework.deployment.aws.LambdaDeployer;
+import org.parachutesmethod.framework.deployment.AWSDeployer;
 import org.parachutesmethod.framework.extraction.ExtractionSetting;
 import org.parachutesmethod.framework.generation.generators.aws.CloudFormationGenerator;
 import org.parachutesmethod.framework.generation.generators.aws.LambdaPackageGenerator;
@@ -76,10 +76,10 @@ public class ParachuteGenerator {
                 CloudFormationGenerator.generateCloudFormationTemplate(cloudFormationTemplatesDir.toString(), routerConfigurations);
                 SAMTemplateGenerator.generate(tempProjectDirPath.getFileName().toString(), parachuteDescriptors, cloudFormationTemplatesDir);
 
+                AWSDeployer.uploadLambdaPackagesToS3Bucket(tempProjectDirPath, parachuteDescriptors);
                 if (deploy) {
-
-                    LambdaDeployer.uploadLambdaPackagesToS3Bucket(tempProjectDirPath, parachuteDescriptors);
-                    LambdaDeployer.deploySAMTemplate(tempProjectDirPath);
+                    AWSDeployer.deploySAMTemplate(tempProjectDirPath);
+                    AWSDeployer.deployCFTemplate(tempProjectDirPath);
                 }
 
             } catch (Exception e) {
@@ -94,7 +94,7 @@ public class ParachuteGenerator {
         try {
             Files.createDirectory(parachuteDir);
             routerConfigurations = NginxRouterGenerator.generateNginxRouterConfigurationFiles(parachuteDir.toString(), descriptors);
-        } catch (TemplateException | IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
         return routerConfigurations;

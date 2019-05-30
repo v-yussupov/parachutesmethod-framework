@@ -1,8 +1,4 @@
-package org.parachutesmethod.framework.deployment.aws;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
+package org.parachutesmethod.framework.deployment;
 
 import org.parachutesmethod.framework.common.Util;
 import org.parachutesmethod.framework.models.java.parachutedescriptors.BundleDescriptor;
@@ -13,7 +9,10 @@ import software.amazon.awssdk.services.s3.model.CreateBucketConfiguration;
 import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 
-public class LambdaDeployer {
+import java.nio.file.Path;
+import java.util.List;
+
+public class AWSDeployer {
 
     public static void uploadLambdaPackagesToS3Bucket(Path tempProjectDirName, List<BundleDescriptor> descriptors) {
 
@@ -45,18 +44,21 @@ public class LambdaDeployer {
     }
 
     public static void deploySAMTemplate(Path tempProjectDirName) {
-        try {
-            Path depModelsPath = tempProjectDirName.resolve("deployment-bundles")
-                    .resolve("deployment-models");
+        Path depModelsPath = tempProjectDirName.resolve("deployment-bundles")
+                .resolve("deployment-models");
 
-            // TODO: make it not ugly
-            String packageCmd = "sam package --template-file template.yml --output-template-file packaged.yml --s3-bucket " + tempProjectDirName.getFileName().toString();
-            String deployCmd = "sam deploy --template-file packaged.yml --stack-name " + tempProjectDirName.getFileName().toString().concat("-stack") + " --capabilities CAPABILITY_IAM";
+        // TODO: make it not ugly
+        String packageCmd = "sam package --template-file template.yml --output-template-file packaged.yml --s3-bucket " + tempProjectDirName.getFileName().toString();
+        String deployCmd = "sam deploy --template-file packaged.yml --stack-name " + tempProjectDirName.getFileName().toString().concat("-stack") + " --capabilities CAPABILITY_IAM";
 
-            Util.invokeShellCommand(depModelsPath, packageCmd);
-            Util.invokeShellCommand(depModelsPath, deployCmd);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        Util.invokeShellCommand(depModelsPath, packageCmd);
+        Util.invokeShellCommand(depModelsPath, deployCmd);
+    }
+
+    public static void deployCFTemplate(Path tempProjectDirName) {
+        Path depModelsPath = tempProjectDirName.resolve("deployment-bundles").resolve("deployment-models");
+
+        String deployCmd = "aws cloudformation deploy --template-file aws-cf-template.json --stack-name " + tempProjectDirName.getFileName().toString().concat("-stack") + " --capabilities CAPABILITY_IAM";
+        Util.invokeShellCommand(depModelsPath, deployCmd);
     }
 }
